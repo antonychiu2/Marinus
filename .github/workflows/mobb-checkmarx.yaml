@@ -32,12 +32,9 @@ jobs:
 
       - name: Download and configure Checkmarx CLI
         run: |
-          wget https://github.com/Checkmarx/ast-cli/releases/download/2.0.54/ast-cli_2.0.54_linux_x64.tar.gz -O checkmarx.tar.gz
+          wget https://github.com/Checkmarx/ast-cli/releases/download/2.2.0/ast-cli_linux_x64.tar.gz -O checkmarx.tar.gz
           tar -xf checkmarx.tar.gz
           ./cx configure set --prop-name cx_apikey --prop-value ${{ secrets.CX_API_TOKEN }}
-          ./cx configure set --prop-name cx_base_auth_uri --prop-value ${{ secrets.CX_BASE_AUTH_URI }}
-          ./cx configure set --prop-name cx_base_uri --prop-value ${{ secrets.CX_BASE_URI }}
-          ./cx configure set --prop-name cx_tenant --prop-value ${{ secrets.CX_TENANT }}
         shell: bash -l {0}
   
       - name: Run Checkmarx SAST scan
