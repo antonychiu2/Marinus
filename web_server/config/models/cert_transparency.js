@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+const mongoSanitize = require('express-mongo-sanitize');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -239,7 +240,7 @@ module.exports = {
     let promise;
     if (count === true) {
       promise = certTransModel.countDocuments({
-        'fingerprint_sha256': fingerprintSha256,
+        'fingerprint_sha256': mongoSanitize.sanitize({ data: fingerprintSha256 }).data,
       }).exec();
     } else {
       promise = certTransModel.findOne({
