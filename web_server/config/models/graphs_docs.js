@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+const mongoSanitize = require('express-mongo-sanitize');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -31,7 +32,7 @@ module.exports = {
     getGraphDocsByZone: function (zone) {
         let limitQuery = { 'docs': 1 };
         return graphDocsModel.findOne({
-            'zone': zone,
+            'zone': mongoSanitize.sanitize({ data: zone }).data,
         }, limitQuery).exec();
     },
 };
