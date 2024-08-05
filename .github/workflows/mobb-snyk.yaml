@@ -32,6 +32,11 @@ jobs:
           npx snyk auth ${{ secrets.SNYK_API_TOKEN }} && npx snyk code test --sarif-file-output=/home/runner/report.json ./
         shell: bash -l {0}
 
+      - name: Upload Report
+        uses: actions/upload-artifact@v4.3.5
+        with:
+          path: /home/runner/report.json
+
       - name: Run Mobb on the findings and get fixes
         if: always()
         uses: mobb-dev/action/review@v1.1
