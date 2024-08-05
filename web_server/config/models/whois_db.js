@@ -55,7 +55,7 @@ module.exports = {
         let promise;
         if (count) {
             promise = whoisModel.countDocuments({
-                'name_servers': reServer,
+                'name_servers': mongoSanitize.sanitize({ data: reServer }).data,
             }).exec();
         } else {
             promise = whoisModel.find({ 'name_servers': reServer }).exec();
