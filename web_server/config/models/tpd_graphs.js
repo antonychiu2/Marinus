@@ -49,7 +49,7 @@ module.exports = {
     getTPDGraphLinksByTPD: function (tpd) {
         let limitQuery = { 'links': 1 };
         return tpdGraphModel.findOne({
-            'zone': tpd,
+            'zone': mongoSanitize.sanitize({ data: tpd }).data,
         }, limitQuery).exec();
     },
 };
