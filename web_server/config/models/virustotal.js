@@ -313,7 +313,7 @@ module.exports = {
     },
     getWhoisByZonePromise: function (zone) {
         return virustotalModel.find({
-            'zone': zone,
+            'zone': mongoSanitize.sanitize({ data: zone }).data,
         }, {
             'zone': 1,
             'whois': 1,
