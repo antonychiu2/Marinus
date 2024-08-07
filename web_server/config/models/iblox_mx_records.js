@@ -51,7 +51,7 @@ module.exports = {
         }).exec();
     },
     getIBMXByMailExchanger: function (mail_exchanger, zone) {
-        let query = { 'mail_exchanger': mail_exchanger };
+        let query = { 'mail_exchanger': mongoSanitize.sanitize({ data: mail_exchanger }).data };
         if (zone) {
             query['zone'] = zone;
         }
