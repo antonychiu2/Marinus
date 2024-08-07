@@ -44,7 +44,7 @@ module.exports = {
     },
     getIBAddrByNamePromise: function (name) {
         return ipAddrModel.find({
-            'name': name,
+            'name': mongoSanitize.sanitize({ data: name }).data,
         }).exec();
     },
     getIBAddrByIPPromise: function (ip) {
