@@ -37,7 +37,7 @@ module.exports = {
     getTPDGraphDataByTPD: function (tpd) {
         let limitQuery = { 'data': 1, 'errs': 1 };
         return tpdGraphModel.findOne({
-            'zone': tpd,
+            'zone': mongoSanitize.sanitize({ data: tpd }).data,
         }, limitQuery).exec();
     },
     getTPDGraphConfigByTPD: function (tpd) {
