@@ -257,7 +257,7 @@ module.exports = {
     },
     getMetaInfoByZonePromise: function (zone) {
         return virustotalModel.find({
-            'zone': zone,
+            'zone': mongoSanitize.sanitize({ data: zone }).data,
         }, {
             'zone': 1,
             'categories': 1,
