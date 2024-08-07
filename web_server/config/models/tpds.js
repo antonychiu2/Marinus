@@ -37,7 +37,7 @@ module.exports = {
     getTPDsByZone: function (zone, listOnly) {
         let promise;
         if (!listOnly) {
-            promise = tpdModel.find({ 'zones.zone': zone }).exec();
+            promise = tpdModel.find({ 'zones.zone': mongoSanitize.sanitize({ data: zone }).data }).exec();
         } else {
             promise = tpdModel.find({
                 'zones.zone': zone,
