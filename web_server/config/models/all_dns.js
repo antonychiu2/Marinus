@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+const mongoSanitize = require('express-mongo-sanitize');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -197,7 +198,7 @@ module.exports = {
          * (Optional) Limit the search with zone and/or source.
          * Return either the records or the count of the records.
          */
-        let search = { 'type': type };
+        let search = { 'type': mongoSanitize.sanitize({ data: type }).data };
         if (zone) {
             search['zone'] = zone;
         }
