@@ -104,7 +104,7 @@ module.exports = {
             }).skip(limit * (page - 1)).limit(limit).exec();
         } else {
             return allIPsModel.find({
-                'host.hosting_partner': partner,
+                'host.hosting_partner': mongoSanitize.sanitize({ data: partner }).data,
             }).exec();
         }
     },
