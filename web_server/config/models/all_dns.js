@@ -349,6 +349,6 @@ module.exports = {
         /**
          * Returns DNS names matching an accountInfoValue
          */
-        return allDnsModel.find({ 'accountInfo.value': accountInfoValue }).exec()
+        return allDnsModel.find({ 'accountInfo.value': mongoSanitize.sanitize({ data: accountInfoValue }).data }).exec()
     }
 };
