@@ -42,7 +42,7 @@ module.exports = {
          * Fetch all DNS records for the provided zone.
          * (Optional) Limit to the provided source.
          */
-        let query = { 'zone': zone };
+        let query = { 'zone': mongoSanitize.sanitize({ data: zone }).data };
         if (source != null) {
             query['sources.source'] = source;
         }
