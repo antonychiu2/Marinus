@@ -43,7 +43,7 @@ module.exports = {
     getCIDRGraphConfigByZone: function (zone) {
         let limitQuery = { 'config': 1 };
         return cidrGraphModel.findOne({
-            'zone': zone,
+            'zone': mongoSanitize.sanitize({ data: zone }).data,
         }, limitQuery).exec();
     },
     getCIDRGraphLinksByZone: function (zone) {
