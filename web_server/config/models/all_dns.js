@@ -225,7 +225,7 @@ module.exports = {
 
         let query = {
             'type': 'cname',
-            'value': reAmazon,
+            'value': mongoSanitize.sanitize({ data: reAmazon }).data,
         };
 
         if (source != null) {
