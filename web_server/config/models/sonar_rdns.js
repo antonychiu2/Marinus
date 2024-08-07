@@ -37,7 +37,7 @@ module.exports = {
     RdnsModel: rdnsModel,
     getSRDNSByZonePromise: function (zone) {
         return rdnsModel.find({
-            'zone': zone,
+            'zone': mongoSanitize.sanitize({ data: zone }).data,
         }).exec();
     },
     getSRDNSByIPPromise: function (ip) {
