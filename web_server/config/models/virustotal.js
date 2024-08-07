@@ -300,7 +300,7 @@ module.exports = {
     getPcapsByZonePromise: function (zone, count) {
         let promise;
         if (count) {
-            promise = virustotalModel.countDocuments({ 'zone': zone }).exec();
+            promise = virustotalModel.countDocuments({ 'zone': mongoSanitize.sanitize({ data: zone }).data }).exec();
         } else {
             promise = virustotalModel.find({
                 'zone': zone,
