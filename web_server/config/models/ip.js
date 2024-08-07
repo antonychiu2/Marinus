@@ -130,7 +130,7 @@ module.exports = {
             }).skip(limit * (page - 1)).limit(limit).exec();
         } else {
             return allIPsModel.find({
-                'version': version,
+                'version': mongoSanitize.sanitize({ data: version }).data,
             }).exec();
         }
     },
