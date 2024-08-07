@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+const mongoSanitize = require('express-mongo-sanitize');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -36,7 +37,7 @@ module.exports = {
     mxModel: mxModel,
     getIBMXByZonePromise: function (zone) {
         return mxModel.find({
-            'zone': zone,
+            'zone': mongoSanitize.sanitize({ data: zone }).data,
         }).exec();
     },
     getIBMXByIBloxZonePromise: function (zone) {
