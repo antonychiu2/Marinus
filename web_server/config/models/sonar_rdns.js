@@ -53,7 +53,7 @@ module.exports = {
     },
     getSRDNSByDomainPromise: function (domain) {
         return rdnsModel.find({
-            'fqdn': domain,
+            'fqdn': mongoSanitize.sanitize({ data: domain }).data,
         }).exec();
     },
     getSRDNSCount: function (zone) {
