@@ -161,7 +161,7 @@ module.exports = {
     let promise;
     if (count === true) {
       promise = certTransModel.countDocuments({
-        'signature_algorithm': algorithm,
+        'signature_algorithm': mongoSanitize.sanitize({ data: algorithm }).data,
         'isExpired': false
       }).exec();
     } else {
