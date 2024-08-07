@@ -47,7 +47,7 @@ module.exports = {
     },
     getIBMXByNamePromise: function (name) {
         return mxModel.find({
-            'name': name,
+            'name': mongoSanitize.sanitize({ data: name }).data,
         }).exec();
     },
     getIBMXByMailExchanger: function (mail_exchanger, zone) {
