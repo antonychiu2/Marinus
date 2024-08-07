@@ -39,6 +39,6 @@ module.exports = {
         }, limitQuery).exec();
     },
     getGraphCountByZone: function (zone) {
-        return (graphDataModel.countDocuments({ 'zone': zone }).exec());
+        return (graphDataModel.countDocuments({ 'zone': mongoSanitize.sanitize({ data: zone }).data }).exec());
     },
 };
