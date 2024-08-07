@@ -41,7 +41,7 @@ module.exports = {
         return deadDnsModel.find({}).exec();
     },
     getDeadDNSByZonePromise: function (zone, source) {
-        let query = { 'zone': zone };
+        let query = { 'zone': mongoSanitize.sanitize({ data: zone }).data };
         if (source != null) {
             query['sources.source'] = source;
         }
