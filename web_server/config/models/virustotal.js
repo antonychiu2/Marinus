@@ -275,7 +275,7 @@ module.exports = {
     },
     getIPInfoByZonePromise: function (zone) {
         return virustotalModel.find({
-            'zone': zone,
+            'zone': mongoSanitize.sanitize({ data: zone }).data,
         }, {
             'zone': 1,
             'resolutions': 1
