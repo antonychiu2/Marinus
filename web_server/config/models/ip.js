@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+const mongoSanitize = require('express-mongo-sanitize');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -49,7 +50,7 @@ module.exports = {
     },
     getIPRecordsByIPPromise: function (ip) {
         return allIPsModel.find({
-            'ip': ip,
+            'ip': mongoSanitize.sanitize({ data: ip }).data,
         }).exec();
     },
     getAllTrackedIPRecordsPromise: function (count, limit, page) {
@@ -77,7 +78,7 @@ module.exports = {
             }).countDocuments().exec();
         } else {
             return allIPsModel.find({
-                'zones': zone,
+                'zones': mongoSanitize.sanitize({ data: zone }).data,
             }).exec();
         }
     },
@@ -88,7 +89,7 @@ module.exports = {
             }).countDocuments().exec();
         } else {
             return allIPsModel.find({
-                'domains': domain,
+                'domains': mongoSanitize.sanitize({ data: domain }).data,
             }).exec();
         }
     },
@@ -103,7 +104,7 @@ module.exports = {
             }).skip(limit * (page - 1)).limit(limit).exec();
         } else {
             return allIPsModel.find({
-                'host.hosting_partner': partner,
+                'host.hosting_partner': mongoSanitize.sanitize({ data: partner }).data,
             }).exec();
         }
     },
@@ -114,7 +115,7 @@ module.exports = {
             }).countDocuments().exec();
         } else {
             return allIPsModel.find({
-                'host.host_cidr': cidr,
+                'host.host_cidr': mongoSanitize.sanitize({ data: cidr }).data,
             }).exec();
         }
     },
@@ -129,7 +130,7 @@ module.exports = {
             }).skip(limit * (page - 1)).limit(limit).exec();
         } else {
             return allIPsModel.find({
-                'version': version,
+                'version': mongoSanitize.sanitize({ data: version }).data,
             }).exec();
         }
     },
