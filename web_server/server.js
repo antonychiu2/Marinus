@@ -50,7 +50,7 @@ if (envConfig.state === 'production' && envConfig.hasOwnProperty("new_relic_enab
 var passport = require('./config/config')(app, envConfig);
 
 // Database
-require('./config/database')(envConfig);
+require('./config/database')(envConfig); 
 
 // Routes
 require('./config/routes')(app, envConfig, passport);
