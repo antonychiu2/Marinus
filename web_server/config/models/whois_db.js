@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+const mongoSanitize = require('express-mongo-sanitize');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -46,7 +47,7 @@ module.exports = {
     WhoisModel: whoisModel,
     getRecordByZonePromise: function (zone) {
         return whoisModel.findOne({
-            'zone': zone,
+            'zone': mongoSanitize.sanitize({ data: zone }).data,
         }).exec();
     },
     getWhoisDNSServerRecords: function (server, count) {
@@ -54,7 +55,7 @@ module.exports = {
         let promise;
         if (count) {
             promise = whoisModel.countDocuments({
-                'name_servers': reServer,
+                'name_servers': mongoSanitize.sanitize({ data: reServer }).data,
             }).exec();
         } else {
             promise = whoisModel.find({ 'name_servers': reServer }).exec();
@@ -124,7 +125,7 @@ module.exports = {
     getWhoisEmailRecords: function (email, count) {
         let promise;
         if (count) {
-            promise = whoisModel.countDocuments({ 'emails': email }).exec();
+            promise = whoisModel.countDocuments({ 'emails': mongoSanitize.sanitize({ data: email }).data }).exec();
         } else {
             promise = whoisModel.find({ 'emails': email }).exec();
         }
