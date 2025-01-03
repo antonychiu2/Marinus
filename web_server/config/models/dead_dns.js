@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+const escapeRegExp = require('lodash.escaperegexp');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -109,7 +110,7 @@ module.exports = {
             || subdomain === 'dead') {
             subdomain = '';
         }
-        let reAmazon = new RegExp('^.*' + subdomain + '\.amazonaws\.com');
+        let reAmazon = new RegExp('^.*' + escapeRegExp(subdomain) + '\.amazonaws\.com');
 
         let query = {
             'type': 'cname',
