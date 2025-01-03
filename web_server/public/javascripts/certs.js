@@ -641,7 +641,7 @@ function fetch_issuer(name, count) {
             }
             if (count) {
                 var safeName = name.replace(/ /g, "");
-                document.getElementById(safeName + "_count").innerHTML = myObj['count'];
+                document.getElementById(safeName + "_count").textContent = myObj['count'];
             } else {
                 display_issuers(myObj, name);
             }
