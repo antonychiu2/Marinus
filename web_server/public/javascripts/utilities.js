@@ -117,7 +117,7 @@ function make_get_request(url, return_function, additionalArgs = null, errorLoca
                 data = JSON.parse(xhr.responseText);
             } catch (err) {
                 if (errorLocation !== "") {
-                    document.getElementById(errorLocation).innerHTML = "<b>Error: Bad JSON! " + err.message + "</b>";
+                    document.getElementById(errorLocation).textContent = "<b>Error: Bad JSON! " + err.message + "</b>";
                 }
                 return;
             }
