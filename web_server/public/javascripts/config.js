@@ -489,7 +489,7 @@ function get_request(url, callback) {
         } else if (xhr.status === 404) {
             callback([]);
         } else if (xhr.status === 500) {
-            document.getElementById('errorMessage').innerHTML = xhr.responseText;
+            document.getElementById('errorMessage').textContent = xhr.responseText;
         }
     };
 
