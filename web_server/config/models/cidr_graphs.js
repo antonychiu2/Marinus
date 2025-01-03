@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+const mongoSanitize = require('express-mongo-sanitize');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -36,7 +37,7 @@ module.exports = {
     getCIDRGraphDataByZone: function (zone) {
         let limitQuery = { 'data': 1, 'errs': 1 };
         return cidrGraphModel.findOne({
-            'zone': zone,
+            'zone': mongoSanitize.sanitize({ data: zone }).data,
         }, limitQuery).exec();
     },
     getCIDRGraphConfigByZone: function (zone) {
