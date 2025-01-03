@@ -216,7 +216,7 @@ function confirm_zone_update(results, id) {
     if (id.includes("IPZone")) {
         document.getElementById("ipZoneUpdateResult").textContent = results['message'];
     } else if (id.includes("IPv6Zone")) {
-        document.getElementById("ipv6ZoneUpdateResult").innerHTML = results['message'];
+        document.getElementById("ipv6ZoneUpdateResult").textContent = results['message'];
     } else {
         document.getElementById("zoneUpdateResult").textContent = results['message'];
     }
