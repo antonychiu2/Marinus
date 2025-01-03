@@ -116,7 +116,7 @@ function patch_zone(ev) {
             try {
                 var myObj = JSON.parse(xhr.responseText);
             } catch (err) {
-                document.getElementById('errorMessage').innerHTML = "<b>Error: Bad JSON! <pre>" + err.message + "</pre></b>";
+                document.getElementById('errorMessage').textContent = "<b>Error: Bad JSON! <pre>" + err.message + "</pre></b>";
                 return;
             }
             confirm_patch_update(myObj, requestId);
