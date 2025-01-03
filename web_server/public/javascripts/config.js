@@ -121,7 +121,7 @@ function patch_zone(ev) {
             }
             confirm_patch_update(myObj, requestId);
         } else if (xhr.status === 500) {
-            document.getElementById('errorMessage').innerHTML = xhr.responseText;
+            document.getElementById('errorMessage').textContent = xhr.responseText;
         }
     };
 
