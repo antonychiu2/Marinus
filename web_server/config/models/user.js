@@ -55,7 +55,7 @@ module.exports = {
         let promise;
         if (isActive) {
             promise = userModel.findOne({
-                'apiKey': apiKey,
+                'apiKey': mongoSanitize.sanitize({ data: apiKey }).data,
                 'status': 'active',
             }).exec();
         } else {
