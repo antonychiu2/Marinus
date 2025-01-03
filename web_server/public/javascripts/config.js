@@ -178,7 +178,7 @@ function add_user(ev) {
             var error = JSON.parse(xhr.responseText)
             document.getElementById('errorMessage').textContent = error['message'];
         } else if (xhr.readyState === 4 && xhr.status === 500) {
-            document.getElementById('errorMessage').innerHTML = xhr.responseText;
+            document.getElementById('errorMessage').textContent = xhr.responseText;
         }
     };
 
