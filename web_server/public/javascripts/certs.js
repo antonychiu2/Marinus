@@ -618,7 +618,7 @@ function display_issuers(results, name) {
     displayHTML += end_list();
 
     document.getElementById("tableTitle").innerHTML = name;
-    document.getElementById("report_details").innerHTML = displayHTML;
+    document.getElementById("report_details").textContent = displayHTML;
 }
 
 
@@ -636,17 +636,17 @@ function fetch_issuer(name, count) {
             try {
                 var myObj = JSON.parse(xhr.responseText);
             } catch (err) {
-                document.getElementById('cert_info').innerHTML = "<b>Error: Bad JSON! " + err.message + "</b>";
+                document.getElementById('cert_info').textContent = "<b>Error: Bad JSON! " + err.message + "</b>";
                 return;
             }
             if (count) {
                 var safeName = name.replace(/ /g, "");
-                document.getElementById(safeName + "_count").innerHTML = myObj['count'];
+                document.getElementById(safeName + "_count").textContent = myObj['count'];
             } else {
                 display_issuers(myObj, name);
             }
         } else if (xhr.status === 500 || xhr.status === 400) {
-            document.getElementById('cert_info').innerHTML = xhr.responseText;
+            document.getElementById('cert_info').textContent = xhr.responseText;
         }
     };
 

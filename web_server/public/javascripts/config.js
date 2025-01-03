@@ -116,12 +116,12 @@ function patch_zone(ev) {
             try {
                 var myObj = JSON.parse(xhr.responseText);
             } catch (err) {
-                document.getElementById('errorMessage').innerHTML = "<b>Error: Bad JSON! <pre>" + err.message + "</pre></b>";
+                document.getElementById('errorMessage').textContent = "<b>Error: Bad JSON! <pre>" + err.message + "</pre></b>";
                 return;
             }
             confirm_patch_update(myObj, requestId);
         } else if (xhr.status === 500) {
-            document.getElementById('errorMessage').innerHTML = xhr.responseText;
+            document.getElementById('errorMessage').textContent = xhr.responseText;
         }
     };
 
@@ -170,15 +170,15 @@ function add_user(ev) {
             try {
                 var myObj = JSON.parse(xhr.responseText);
             } catch (err) {
-                document.getElementById('errorMessage').innerHTML = "<b>Error: Bad JSON! <pre>" + err.message + "</pre></b>";
+                document.getElementById('errorMessage').textContent = "<b>Error: Bad JSON! <pre>" + err.message + "</pre></b>";
                 return false;
             }
             confirm_user_update(myObj, requestId);
         } else if (xhr.readyState === 4 && xhr.status === 400) {
             var error = JSON.parse(xhr.responseText)
-            document.getElementById('errorMessage').innerHTML = error['message'];
+            document.getElementById('errorMessage').textContent = error['message'];
         } else if (xhr.readyState === 4 && xhr.status === 500) {
-            document.getElementById('errorMessage').innerHTML = xhr.responseText;
+            document.getElementById('errorMessage').textContent = xhr.responseText;
         }
     };
 
@@ -214,11 +214,11 @@ function find_zones(ev) {
 
 function confirm_zone_update(results, id) {
     if (id.includes("IPZone")) {
-        document.getElementById("ipZoneUpdateResult").innerHTML = results['message'];
+        document.getElementById("ipZoneUpdateResult").textContent = results['message'];
     } else if (id.includes("IPv6Zone")) {
-        document.getElementById("ipv6ZoneUpdateResult").innerHTML = results['message'];
+        document.getElementById("ipv6ZoneUpdateResult").textContent = results['message'];
     } else {
-        document.getElementById("zoneUpdateResult").innerHTML = results['message'];
+        document.getElementById("zoneUpdateResult").textContent = results['message'];
     }
 }
 
@@ -257,12 +257,12 @@ function add_zone() {
             try {
                 var myObj = JSON.parse(xhr.responseText);
             } catch (err) {
-                document.getElementById('errorMessage').innerHTML = "<b>Error: Bad JSON! <pre>" + err.message + "</pre></b>";
+                document.getElementById('errorMessage').textContent = "<b>Error: Bad JSON! <pre>" + err.message + "</pre></b>";
                 return;
             }
             confirm_zone_update(myObj, requestId);
         } else if (xhr.status === 500 || xhr.status === 400) {
-            document.getElementById('errorMessage').innerHTML = xhr.responseText;
+            document.getElementById('errorMessage').textContent = xhr.responseText;
         }
     };
 
@@ -482,14 +482,14 @@ function get_request(url, callback) {
             try {
                 var myObj = JSON.parse(xhr.responseText);
             } catch (err) {
-                document.getElementById('errorMessage').innerHTML = "<b>Error: Bad JSON! <pre>" + err.message + "</pre></b>";
+                document.getElementById('errorMessage').textContent = "<b>Error: Bad JSON! <pre>" + err.message + "</pre></b>";
                 return;
             }
             callback(myObj);
         } else if (xhr.status === 404) {
             callback([]);
         } else if (xhr.status === 500) {
-            document.getElementById('errorMessage').innerHTML = xhr.responseText;
+            document.getElementById('errorMessage').textContent = xhr.responseText;
         }
     };
 
