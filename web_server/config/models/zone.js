@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+const escapeRegExp = require('lodash.escaperegexp');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -65,7 +66,7 @@ module.exports = {
         let query = {};
         let regex;
         if (pattern != null) {
-            regex = new RegExp('.*' + pattern + '.*');
+            regex = new RegExp('.*' + escapeRegExp(pattern) + '.*');
             query['zone'] = regex;
         }
         if (includeFps === true) {
