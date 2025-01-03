@@ -170,7 +170,7 @@ function add_user(ev) {
             try {
                 var myObj = JSON.parse(xhr.responseText);
             } catch (err) {
-                document.getElementById('errorMessage').innerHTML = "<b>Error: Bad JSON! <pre>" + err.message + "</pre></b>";
+                document.getElementById('errorMessage').textContent = "<b>Error: Bad JSON! <pre>" + err.message + "</pre></b>";
                 return false;
             }
             confirm_user_update(myObj, requestId);
