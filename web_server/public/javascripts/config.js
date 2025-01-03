@@ -262,7 +262,7 @@ function add_zone() {
             }
             confirm_zone_update(myObj, requestId);
         } else if (xhr.status === 500 || xhr.status === 400) {
-            document.getElementById('errorMessage').innerHTML = xhr.responseText;
+            document.getElementById('errorMessage').textContent = xhr.responseText;
         }
     };
 
