@@ -636,7 +636,7 @@ function fetch_issuer(name, count) {
             try {
                 var myObj = JSON.parse(xhr.responseText);
             } catch (err) {
-                document.getElementById('cert_info').innerHTML = "<b>Error: Bad JSON! " + err.message + "</b>";
+                document.getElementById('cert_info').textContent = "<b>Error: Bad JSON! " + err.message + "</b>";
                 return;
             }
             if (count) {
