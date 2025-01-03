@@ -133,7 +133,7 @@ module.exports = {
         return deadDnsModel.countDocuments(query).exec();
     },
     getDeadDNSByCanonicalSearch: function (search, zone, source) {
-        let reSearch = new RegExp('.*' + search + '$');
+        let reSearch = new RegExp('.*' + escapeRegExp(search) + '$');
         let promise;
         let query;
         if (zone) {
