@@ -646,7 +646,7 @@ function fetch_issuer(name, count) {
                 display_issuers(myObj, name);
             }
         } else if (xhr.status === 500 || xhr.status === 400) {
-            document.getElementById('cert_info').innerHTML = xhr.responseText;
+            document.getElementById('cert_info').textContent = xhr.responseText;
         }
     };
 
