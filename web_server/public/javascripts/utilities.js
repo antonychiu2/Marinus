@@ -135,7 +135,7 @@ function make_get_request(url, return_function, additionalArgs = null, errorLoca
             }
         } else if (xhr.status === 500 || xhr.status === 400) {
             if (errorLocation !== "") {
-                document.getElementById(errorLocation).innerHTML = xhr.responseText;
+                document.getElementById(errorLocation).textContent = xhr.responseText;
             }
         }
     };
