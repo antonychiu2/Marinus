@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+const escapeRegExp = require('lodash.escaperegexp');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -49,7 +50,7 @@ module.exports = {
         }).exec();
     },
     getIBTXTByRegex: function (regex) {
-        let reTxt = new RegExp('.*' + regex + '.*');
+        let reTxt = new RegExp('.*' + escapeRegExp(regex) + '.*');
 
         return txtModel.find({
             'text': { '$regex': reTxt },
