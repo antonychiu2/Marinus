@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+const mongoSanitize = require('express-mongo-sanitize');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -255,7 +256,7 @@ module.exports = {
         if (zone) {
             query = {
                 'type': 'cname',
-                'value': cname,
+                'value': mongoSanitize.sanitize({ data: cname }).data,
                 'zone': zone,
             };
             if (source != null) {
