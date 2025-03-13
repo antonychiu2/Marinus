@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+const mongoSanitize = require('express-mongo-sanitize');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -41,7 +42,7 @@ module.exports = {
     },
     getSRDNSByIPPromise: function (ip) {
         return rdnsModel.find({
-            'ip': ip,
+            'ip': mongoSanitize.sanitize({ data: ip }).data,
         }).exec();
     },
     getSRDNSByIPRangePromise: function (ipRange) {
