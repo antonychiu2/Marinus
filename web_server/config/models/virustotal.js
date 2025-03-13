@@ -203,7 +203,7 @@ module.exports = {
             }).exists('detected_downloaded_samples').countDocuments().exec();
         } else {
             promise = virustotalModel.find({
-                'zone': zone,
+                'zone': mongoSanitize.sanitize({ data: zone }).data,
                 'detected_downloaded_samples': { '$ne': [] },
             }, {
                 'zone': 1,
