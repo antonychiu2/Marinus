@@ -51,7 +51,7 @@ module.exports = {
     },
     getIBIPv6AddrByIPPromise: function (ip) {
         return ipv6AddrModel.find({
-            'ipv6addr': ip,
+            'ipv6addr': mongoSanitize.sanitize({ data: ip }).data,
         }).exec();
     },
     getIBIPv6AddrByIPRangePromise: function (ipRange) {
