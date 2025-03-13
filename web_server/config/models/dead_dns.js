@@ -89,7 +89,7 @@ module.exports = {
         }]).sort({ '_id': 1 }).exec();
     },
     getDeadDNSByTypePromise: function (type, zone, source, count) {
-        let search = { 'type': type };
+        let search = { 'type': mongoSanitize.sanitize({ data: type }).data };
         if (zone) {
             search['zone'] = zone;
         }
