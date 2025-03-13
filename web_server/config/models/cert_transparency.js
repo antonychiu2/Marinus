@@ -227,7 +227,7 @@ module.exports = {
     let promise;
     if (count === true) {
       promise = certTransModel.countDocuments({
-        'fingerprint_sha1': fingerprintSha1,
+        'fingerprint_sha1': mongoSanitize.sanitize({ data: fingerprintSha1 }).data,
       }).exec();
     } else {
       promise = certTransModel.findOne({
