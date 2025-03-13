@@ -131,7 +131,7 @@ module.exports = {
     }
 
     if (count) {
-      return certTransModel.countDocuments({ 'serial_number': serial_number.toLowerCase() }).exec();
+      return certTransModel.countDocuments({ 'serial_number': mongoSanitize.sanitize({ data: serial_number.toLowerCase() }).data }).exec();
     }
 
     return certTransModel.find({ 'serial_number': serial_number.toLowerCase() }).exec();
