@@ -38,7 +38,7 @@ module.exports = {
         let promise;
         if (onlyIsActive) {
             promise = userModel.findOne({
-                'userid': userid,
+                'userid': mongoSanitize.sanitize({ data: userid }).data,
                 'status': 'active',
             }).exec();
         } else {
