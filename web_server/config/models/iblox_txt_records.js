@@ -36,7 +36,7 @@ module.exports = {
     txtModel: txtModel,
     getIBTXTByZonePromise: function (zone) {
         return txtModel.find({
-            'zone': zone,
+            'zone': mongoSanitize.sanitize({ data: zone }).data,
         }).exec();
     },
     getIBTXTByIBloxZonePromise: function (zone) {
