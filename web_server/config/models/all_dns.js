@@ -198,7 +198,7 @@ module.exports = {
          * (Optional) Limit the search with zone and/or source.
          * Return either the records or the count of the records.
          */
-        let search = { 'type': type };
+        let search = { 'type': mongoSanitize.sanitize({ data: type }).data };
         if (zone) {
             search['zone'] = zone;
         }
