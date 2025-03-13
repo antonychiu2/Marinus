@@ -47,7 +47,7 @@ module.exports = {
     WhoisModel: whoisModel,
     getRecordByZonePromise: function (zone) {
         return whoisModel.findOne({
-            'zone': zone,
+            'zone': mongoSanitize.sanitize({ data: zone }).data,
         }).exec();
     },
     getWhoisDNSServerRecords: function (server, count) {
