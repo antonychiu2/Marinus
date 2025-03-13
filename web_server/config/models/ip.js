@@ -89,7 +89,7 @@ module.exports = {
             }).countDocuments().exec();
         } else {
             return allIPsModel.find({
-                'domains': domain,
+                'domains': mongoSanitize.sanitize({ data: domain }).data,
             }).exec();
         }
     },
