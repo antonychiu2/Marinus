@@ -107,7 +107,7 @@ module.exports = {
     VirustotalModel: virustotalModel,
     getRecordByZonePromise: function (zone) {
         return virustotalModel.findOne({
-            'zone': zone,
+            'zone': mongoSanitize.sanitize({ data: zone }).data,
         }).exec();
     },
     getDetectedReferrerSamplesPromise: function (count) {
