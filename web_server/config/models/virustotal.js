@@ -248,7 +248,7 @@ module.exports = {
     },
     getSubDomainsByZonePromise: function (zone) {
         return virustotalModel.find({
-            'zone': zone,
+            'zone': mongoSanitize.sanitize({ data: zone }).data,
         }, {
             'zone': 1,
             'domain_siblings': 1,
