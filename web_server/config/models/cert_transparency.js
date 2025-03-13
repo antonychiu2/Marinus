@@ -81,7 +81,7 @@ module.exports = {
     if (count) {
       promise = certTransModel.find({ 'zones': zone }).countDocuments().exec();
     } else {
-      promise = certTransModel.find({ 'zones': zone }).exec();
+      promise = certTransModel.find({ 'zones': mongoSanitize.sanitize({ data: zone }).data }).exec();
     }
     return promise;
   },
