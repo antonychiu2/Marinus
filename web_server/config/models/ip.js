@@ -115,7 +115,7 @@ module.exports = {
             }).countDocuments().exec();
         } else {
             return allIPsModel.find({
-                'host.host_cidr': cidr,
+                'host.host_cidr': mongoSanitize.sanitize({ data: cidr }).data,
             }).exec();
         }
     },
