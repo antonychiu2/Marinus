@@ -37,7 +37,7 @@ module.exports = {
     mxModel: mxModel,
     getIBMXByZonePromise: function (zone) {
         return mxModel.find({
-            'zone': zone,
+            'zone': mongoSanitize.sanitize({ data: zone }).data,
         }).exec();
     },
     getIBMXByIBloxZonePromise: function (zone) {
