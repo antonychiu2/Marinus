@@ -60,7 +60,7 @@ module.exports = {
          * Fetch all DNS records associated to the provided FQDN.
          * (Optional) Limit to the provided source.
          */
-        let query = { 'fqdn': domain };
+        let query = { 'fqdn': mongoSanitize.sanitize({ data: domain }).data };
         if (source != null) {
             query['sources.source'] = source;
         }
