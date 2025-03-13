@@ -40,7 +40,7 @@ module.exports = {
     HostModel: hostModel,
     getIBHostByZonePromise: function (zone) {
         return hostModel.find({
-            'zone': zone,
+            'zone': mongoSanitize.sanitize({ data: zone }).data,
         }).exec();
     },
     getIBHostByIBloxZonePromise: function (zone) {
