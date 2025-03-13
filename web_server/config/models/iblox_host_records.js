@@ -50,7 +50,7 @@ module.exports = {
     },
     getIBHostByNamePromise: function (name) {
         return hostModel.find({
-            'name': name,
+            'name': mongoSanitize.sanitize({ data: name }).data,
         }).exec();
     },
     getIBHostByIPPromise: function (ip) {
