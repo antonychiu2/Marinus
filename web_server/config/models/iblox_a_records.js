@@ -34,7 +34,7 @@ module.exports = {
     IPAddrModel: ipAddrModel,
     getIBAddrByZonePromise: function (zone) {
         return ipAddrModel.find({
-            'zone': zone,
+            'zone': mongoSanitize.sanitize({ data: zone }).data,
         }).exec();
     },
     getIBAddrByIBloxZonePromise: function (zone) {
