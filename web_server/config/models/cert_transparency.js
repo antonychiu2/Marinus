@@ -138,7 +138,7 @@ module.exports = {
   },
   getCertTransIssuers: function (issuer, count, excludeExpired) {
     let promise;
-    let query = { 'issuer_common_name': issuer }
+    let query = { 'issuer_common_name': mongoSanitize.sanitize({ data: issuer }).data }
     if (excludeExpired != null && excludeExpired === true) {
       query['isExpired'] = false;
     }
