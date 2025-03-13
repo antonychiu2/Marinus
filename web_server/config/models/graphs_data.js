@@ -35,7 +35,7 @@ module.exports = {
     getGraphDataByZone: function (zone) {
         let limitQuery = { 'data': 1, 'errs': 1 };
         return graphDataModel.findOne({
-            'zone': zone,
+            'zone': mongoSanitize.sanitize({ data: zone }).data,
         }, limitQuery).exec();
     },
     getGraphCountByZone: function (zone) {
