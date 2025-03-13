@@ -135,7 +135,7 @@ module.exports = {
             }).exists('detected_referrer_samples').countDocuments().exec();
         } else {
             promise = virustotalModel.find({
-                'zone': zone,
+                'zone': mongoSanitize.sanitize({ data: zone }).data,
                 'detected_referrer_samples': { '$ne': [] },
             }, {
                 'zone': 1,
