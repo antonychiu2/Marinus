@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+const mongoSanitize = require('express-mongo-sanitize');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -160,7 +161,7 @@ module.exports = {
     let promise;
     if (count === true) {
       promise = certTransModel.countDocuments({
-        'signature_algorithm': algorithm,
+        'signature_algorithm': mongoSanitize.sanitize({ data: algorithm }).data,
         'isExpired': false
       }).exec();
     } else {
