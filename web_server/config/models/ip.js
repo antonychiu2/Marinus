@@ -78,7 +78,7 @@ module.exports = {
             }).countDocuments().exec();
         } else {
             return allIPsModel.find({
-                'zones': zone,
+                'zones': mongoSanitize.sanitize({ data: zone }).data,
             }).exec();
         }
     },
