@@ -57,7 +57,7 @@ module.exports = {
     getDeadDNSByIPPromise: function (ip, source) {
         let query = {
             'type': 'a',
-            'value': ip,
+            'value': mongoSanitize.sanitize({ data: ip }).data,
         };
         if (source != null) {
             query['sources.source'] = source;
