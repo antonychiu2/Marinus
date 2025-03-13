@@ -49,7 +49,7 @@ module.exports = {
     },
     getIBAddrByIPPromise: function (ip) {
         return ipAddrModel.find({
-            'ipv4addr': ip,
+            'ipv4addr': mongoSanitize.sanitize({ data: ip }).data,
         }).exec();
     },
     getIBAddrByIPRangePromise: function (ipRange) {
