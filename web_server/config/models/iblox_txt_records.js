@@ -53,7 +53,7 @@ module.exports = {
         let reTxt = new RegExp('.*' + regex + '.*');
 
         return txtModel.find({
-            'text': { '$regex': reTxt },
+            'text': mongoSanitize.sanitize({ data: { '$regex': reTxt } }).data,
         });
     },
     getIBTXTCountPromise: function (zone) {
