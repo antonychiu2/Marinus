@@ -87,7 +87,7 @@ module.exports = {
          */
         let query = {
             'type': 'aaaa',
-            'value': ip,
+            'value': mongoSanitize.sanitize({ data: ip }).data,
         };
         if (source != null) {
             query['sources.source'] = source;
