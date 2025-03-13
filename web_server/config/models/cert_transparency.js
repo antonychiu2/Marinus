@@ -66,7 +66,7 @@ module.exports = {
   CertTransModel: certTransModel,
   getCertTransOrgPromise: function (org) {
     return certTransModel.find({
-      'subject_organization_name': { $in: org },
+      'subject_organization_name': mongoSanitize.sanitize({ data: { $in: org } }).data,
     }).exec();
   },
   getCertTransCNPromise: function (domain) {
