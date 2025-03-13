@@ -50,7 +50,7 @@ module.exports = {
     },
     getIPRecordsByIPPromise: function (ip) {
         return allIPsModel.find({
-            'ip': ip,
+            'ip': mongoSanitize.sanitize({ data: ip }).data,
         }).exec();
     },
     getAllTrackedIPRecordsPromise: function (count, limit, page) {
