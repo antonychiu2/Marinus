@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+const mongoSanitize = require('express-mongo-sanitize');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -348,6 +349,6 @@ module.exports = {
         /**
          * Returns DNS names matching an accountInfoValue
          */
-        return allDnsModel.find({ 'accountInfo.value': accountInfoValue }).exec()
+        return allDnsModel.find({ 'accountInfo.value': mongoSanitize.sanitize({ data: accountInfoValue }).data }).exec()
     }
 };
