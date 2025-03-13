@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+const mongoSanitize = require('express-mongo-sanitize');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -65,7 +66,7 @@ module.exports = {
   CertTransModel: certTransModel,
   getCertTransOrgPromise: function (org) {
     return certTransModel.find({
-      'subject_organization_name': { $in: org },
+      'subject_organization_name': mongoSanitize.sanitize({ data: { $in: org } }).data,
     }).exec();
   },
   getCertTransCNPromise: function (domain) {
@@ -80,7 +81,7 @@ module.exports = {
     if (count) {
       promise = certTransModel.find({ 'zones': zone }).countDocuments().exec();
     } else {
-      promise = certTransModel.find({ 'zones': zone }).exec();
+      promise = certTransModel.find({ 'zones': mongoSanitize.sanitize({ data: zone }).data }).exec();
     }
     return promise;
   },
@@ -130,14 +131,14 @@ module.exports = {
     }
 
     if (count) {
-      return certTransModel.countDocuments({ 'serial_number': serial_number.toLowerCase() }).exec();
+      return certTransModel.countDocuments({ 'serial_number': mongoSanitize.sanitize({ data: serial_number.toLowerCase() }).data }).exec();
     }
 
     return certTransModel.find({ 'serial_number': serial_number.toLowerCase() }).exec();
   },
   getCertTransIssuers: function (issuer, count, excludeExpired) {
     let promise;
-    let query = { 'issuer_common_name': issuer }
+    let query = { 'issuer_common_name': mongoSanitize.sanitize({ data: issuer }).data }
     if (excludeExpired != null && excludeExpired === true) {
       query['isExpired'] = false;
     }
@@ -160,7 +161,7 @@ module.exports = {
     let promise;
     if (count === true) {
       promise = certTransModel.countDocuments({
-        'signature_algorithm': algorithm,
+        'signature_algorithm': mongoSanitize.sanitize({ data: algorithm }).data,
         'isExpired': false
       }).exec();
     } else {
@@ -226,7 +227,7 @@ module.exports = {
     let promise;
     if (count === true) {
       promise = certTransModel.countDocuments({
-        'fingerprint_sha1': fingerprintSha1,
+        'fingerprint_sha1': mongoSanitize.sanitize({ data: fingerprintSha1 }).data,
       }).exec();
     } else {
       promise = certTransModel.findOne({
@@ -239,7 +240,7 @@ module.exports = {
     let promise;
     if (count === true) {
       promise = certTransModel.countDocuments({
-        'fingerprint_sha256': fingerprintSha256,
+        'fingerprint_sha256': mongoSanitize.sanitize({ data: fingerprintSha256 }).data,
       }).exec();
     } else {
       promise = certTransModel.findOne({

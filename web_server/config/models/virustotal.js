@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+const mongoSanitize = require('express-mongo-sanitize');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -106,7 +107,7 @@ module.exports = {
     VirustotalModel: virustotalModel,
     getRecordByZonePromise: function (zone) {
         return virustotalModel.findOne({
-            'zone': zone,
+            'zone': mongoSanitize.sanitize({ data: zone }).data,
         }).exec();
     },
     getDetectedReferrerSamplesPromise: function (count) {
@@ -134,7 +135,7 @@ module.exports = {
             }).exists('detected_referrer_samples').countDocuments().exec();
         } else {
             promise = virustotalModel.find({
-                'zone': zone,
+                'zone': mongoSanitize.sanitize({ data: zone }).data,
                 'detected_referrer_samples': { '$ne': [] },
             }, {
                 'zone': 1,
@@ -168,7 +169,7 @@ module.exports = {
             }).exists('detected_communicating_samples').countDocuments().exec();
         } else {
             promise = virustotalModel.find({
-                'zone': zone,
+                'zone': mongoSanitize.sanitize({ data: zone }).data,
                 'detected_communicating_samples': { '$ne': [] },
             }, {
                 'zone': 1,
@@ -202,7 +203,7 @@ module.exports = {
             }).exists('detected_downloaded_samples').countDocuments().exec();
         } else {
             promise = virustotalModel.find({
-                'zone': zone,
+                'zone': mongoSanitize.sanitize({ data: zone }).data,
                 'detected_downloaded_samples': { '$ne': [] },
             }, {
                 'zone': 1,
@@ -236,7 +237,7 @@ module.exports = {
             }).exists('detected_urls').countDocuments().exec();
         } else {
             promise = virustotalModel.find({
-                'zone': zone,
+                'zone': mongoSanitize.sanitize({ data: zone }).data,
                 'detected_urls': { '$ne': [] },
             }, {
                 'zone': 1,
@@ -247,7 +248,7 @@ module.exports = {
     },
     getSubDomainsByZonePromise: function (zone) {
         return virustotalModel.find({
-            'zone': zone,
+            'zone': mongoSanitize.sanitize({ data: zone }).data,
         }, {
             'zone': 1,
             'domain_siblings': 1,
@@ -256,7 +257,7 @@ module.exports = {
     },
     getMetaInfoByZonePromise: function (zone) {
         return virustotalModel.find({
-            'zone': zone,
+            'zone': mongoSanitize.sanitize({ data: zone }).data,
         }, {
             'zone': 1,
             'categories': 1,
@@ -274,7 +275,7 @@ module.exports = {
     },
     getIPInfoByZonePromise: function (zone) {
         return virustotalModel.find({
-            'zone': zone,
+            'zone': mongoSanitize.sanitize({ data: zone }).data,
         }, {
             'zone': 1,
             'resolutions': 1
@@ -299,7 +300,7 @@ module.exports = {
     getPcapsByZonePromise: function (zone, count) {
         let promise;
         if (count) {
-            promise = virustotalModel.countDocuments({ 'zone': zone }).exec();
+            promise = virustotalModel.countDocuments({ 'zone': mongoSanitize.sanitize({ data: zone }).data }).exec();
         } else {
             promise = virustotalModel.find({
                 'zone': zone,
@@ -312,7 +313,7 @@ module.exports = {
     },
     getWhoisByZonePromise: function (zone) {
         return virustotalModel.find({
-            'zone': zone,
+            'zone': mongoSanitize.sanitize({ data: zone }).data,
         }, {
             'zone': 1,
             'whois': 1,
