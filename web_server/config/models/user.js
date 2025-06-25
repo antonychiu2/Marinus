@@ -43,7 +43,7 @@ module.exports = {
             }).exec();
         } else {
             promise = userModel.findOne({
-                'userid': userid,
+                'userid': mongoSanitize.sanitize({ data: userid }).data,
             }).exec();
         }
         return promise;
