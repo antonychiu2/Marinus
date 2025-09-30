@@ -36,43 +36,44 @@ jobs:
       BRANCH: ${{ github.head_ref || github.ref_name }}
 
     steps:
-      - name: Setup Java on this machine
-        uses: actions/setup-java@v3
+      - name: Checkout repo to get code
+        uses: actions/checkout@v3
         with:
-          distribution: "oracle"
-          java-version: "19"
-
-      - name: Setup Maven on this machine
-        uses: stCarolas/setup-maven@v4.5
-        with:
-          maven-version: 3.8.6
+          fetch-depth: 0  # Shallow clones should be disabled for better analysis
 
       - name: Setup Node on this machine
         uses: actions/setup-node@v3.6.0
         with:
           node-version: 18
-
-      - name: Install pip requests
-        run: pip install requests
-
-      - name: Checkout repo to get code
-        uses: actions/checkout@v3
-        
+          
       - name: Check env
         run: |
           echo "Branch is: $BRANCH"
           env
           
       - name: Run SonarQube SAST scan
-        run: |
-          mvn clean verify sonar:sonar \
-            -Dsonar.host.url=${{ vars.SONARQUBE_HOST_URL }} \
-            -Dsonar.projectKey=${{ vars.SONARQUBE_PROJECT }} \
-            -Dsonar.token=${{ secrets.SONARQUBE_TOKEN }} \
-            -Dsonar.organization=${{ vars.SONARQUBE_ORG }} \
-            -Dsonar.branch.name="$BRANCH" \
-            -Dsonar.qualitygate.wait=true \
-            -Dsonar.java.skipUnchanged=false
+        uses: sonarqube-quality-gate-action@master
+        with:
+          scanMetadataReportFile: target/sonar/report-task.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          SONAR_HOST_URL: ${{ vars.SONARQUBE_HOST_URL }}
+
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          SONAR_HOST_URL: ${{ vars.SONARQUBE_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=${{ vars.SONARQUBE_PROJECT }}
+            -Dsonar.organization=${{ vars.SONARQUBE_ORG }}
+            -Dsonar.branch.name=${{ env.BRANCH }}
+            -Dsonar.sources=.
+            -Dsonar.exclusions=**/node_modules/**,**/*.log,**/*.md
+            -Dsonar.python.coverage.reportPaths=coverage.xml
 
       - name: Export SonarQube report
         if: always()
