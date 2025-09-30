@@ -74,7 +74,22 @@ jobs:
             -Dsonar.sources=.
             -Dsonar.exclusions=**/node_modules/**,**/*.log,**/*.md
             -Dsonar.python.coverage.reportPaths=coverage.xml
-            -Dsonar.report.export.path=report.json
+
+      - name: Wait for SonarCloud processing
+        run: |
+          echo "Waiting 5 seconds for SonarCloud to process scan results..."
+          sleep 5
+
+      - name: Export SonarQube report
+        if: always()
+        run: |
+          SONARQUBE_HOST_URL=${{ vars.SONARQUBE_HOST_URL }} \
+          SONARQUBE_PROJECT=${{ vars.SONARQUBE_PROJECT }} \
+          SONARQUBE_TOKEN=${{ secrets.SONARQUBE_TOKEN }} \
+          SONARQUBE_ORG=${{ vars.SONARQUBE_ORG }} \
+          PULL_REQUEST_ID=${{ github.event.number }} \
+          REPORT_PATH=report.json \
+          python .github/workflows/sonarqube_download_report.py
 
       - name: Archive SonarQube report
         if: always()
