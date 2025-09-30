@@ -62,6 +62,8 @@ jobs:
             -Dsonar.projectKey=${{ vars.SONARQUBE_PROJECT }}
             -Dsonar.organization=${{ vars.SONARQUBE_ORG }}
             -Dsonar.branch.name=${{ env.BRANCH }}
+            -Dsonar.token=${{ secrets.SONARQUBE_TOKEN }}
+            -Dsonar.host.url=${{ vars.SONARQUBE_HOST_URL }}
             -Dsonar.sources=.
             -Dsonar.exclusions=**/node_modules/**,**/*.log,**/*.md
             -Dsonar.python.coverage.reportPaths=coverage.xml
@@ -75,7 +77,7 @@ jobs:
           SONARQUBE_ORG=${{ vars.SONARQUBE_ORG }} \
           BRANCH="$BRANCH" \
           REPORT_PATH=report.json \
-          python .github/scripts/sonarqube_download_report.py
+          python .github/workflows/sonarqube_download_report.py
 
       - name: Run Mobb on the findings and get fixes
         if: always()
