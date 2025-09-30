@@ -83,8 +83,8 @@ jobs:
           SONARQUBE_PROJECT=${{ vars.SONARQUBE_PROJECT }} \
           SONARQUBE_TOKEN=${{ secrets.SONARQUBE_TOKEN }} \
           SONARQUBE_ORG=${{ vars.SONARQUBE_ORG }} \
-          BRANCH="$BRANCH" \
           REPORT_PATH=report.json \
+          ${{ github.event_name == 'pull_request' && format('PULL_REQUEST_ID={0}', github.event.number) || format('BRANCH="{0}"', env.BRANCH) }} \
           python .github/workflows/sonarqube_download_report.py
 
       - name: Archive SonarQube report
