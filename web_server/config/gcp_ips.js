@@ -15,29 +15,26 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const configSchema = new Schema({
-    updated: Date,
-    DNS_Admins: [String],
-    SSL_Orgs: [String],
-    Whois_Orgs: [String],
+const gcpIpSchema = new Schema({
+    created: Date,
+    prefixes: [{
+        ip_prefix: String,
+    }],
+    ipv6_prefixes: [{
+        ipv6_prefix: String,
+    }],
 }, {
-    collection: 'config',
+    collection: 'gcp_ips',
 });
 
-const configModel = mongoose.model('configModel', configSchema);
+const gcpIpModel = mongoose.model('gcpIpModel', gcpIpSchema);
 
 module.exports = {
-    configModel: configModel,
-    getDNSAdminsPromise: function () {
-        return configModel.find({}, { 'DNS_Admins': 1, '_id': 0 }).exec();
+    gcpIpModel: gcpIpModel,
+    getGCPIpZonesPromise: function () {
+        return gcpIpModel.find({}, { 'prefixes': 1, '_id': 0 });
     },
-    getSSLOrgsPromise: function () {
-        return configModel.find({}, { 'SSL_Orgs': 1, '_id': 0 }).exec();
-    },
-    getWhoisOrgsPromise: function () {
-        return configModel.find({}, { 'Whois_Orgs': 1, '_id': 0 }).exec();
-    },
-    getFullConfigPromise: function () {
-        return configModel.find({}).exec();
+    getGCPIpv6ZonesPromise: function () {
+        return gcpIpModel.find({}, { 'ipv6_prefixes': 1, '_id': 0 });
     },
 };

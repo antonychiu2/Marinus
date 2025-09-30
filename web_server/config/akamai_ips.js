@@ -1,5 +1,4 @@
 'use strict';
-
 /**
  * Copyright 2022 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -15,29 +14,29 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const configSchema = new Schema({
-    updated: Date,
-    DNS_Admins: [String],
-    SSL_Orgs: [String],
-    Whois_Orgs: [String],
+const akamaiIpSchema = new Schema({
+    createDate: Date,
+    note: String,
+    ranges: [{
+        cidr: String,
+        ip_range: String,
+    }],
+    ipv6_ranges: [{
+        cidr: String,
+        ipv6_range: String,
+    }],
 }, {
-    collection: 'config',
+    collection: 'akamai_ips',
 });
 
-const configModel = mongoose.model('configModel', configSchema);
+const akamaiIpModel = mongoose.model('akamaiIpModel', akamaiIpSchema);
 
 module.exports = {
-    configModel: configModel,
-    getDNSAdminsPromise: function () {
-        return configModel.find({}, { 'DNS_Admins': 1, '_id': 0 }).exec();
+    AkamaiIpModel: akamaiIpModel,
+    getAkamaiIpZonesPromise: function () {
+        return akamaiIpModel.find({}, { 'ranges': 1, '_id': 0 }).exec();
     },
-    getSSLOrgsPromise: function () {
-        return configModel.find({}, { 'SSL_Orgs': 1, '_id': 0 }).exec();
-    },
-    getWhoisOrgsPromise: function () {
-        return configModel.find({}, { 'Whois_Orgs': 1, '_id': 0 }).exec();
-    },
-    getFullConfigPromise: function () {
-        return configModel.find({}).exec();
+    getAkamaiIpv6ZonesPromise: function () {
+        return akamaiIpModel.find({}, { 'ipv6_ranges': 1, '_id': 0 }).exec();
     },
 };

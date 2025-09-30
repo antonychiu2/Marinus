@@ -15,29 +15,25 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const configSchema = new Schema({
-    updated: Date,
-    DNS_Admins: [String],
-    SSL_Orgs: [String],
-    Whois_Orgs: [String],
+/**
+ * This is a placeholder for an upcoming feature around saved queries.
+ * It is not currently implemented.
+ */
+const querySchema = new Schema({
+    owner: String,
+    name: String,
+    creation_date: Date,
+    users: [String],
+    groups: [String],
+    service: [String],
+    getParams: [String],
+    postParams: [String],
 }, {
-    collection: 'config',
+    collection: 'queries',
 });
 
-const configModel = mongoose.model('configModel', configSchema);
+const queryModel = mongoose.model('queryModel', querySchema);
 
 module.exports = {
-    configModel: configModel,
-    getDNSAdminsPromise: function () {
-        return configModel.find({}, { 'DNS_Admins': 1, '_id': 0 }).exec();
-    },
-    getSSLOrgsPromise: function () {
-        return configModel.find({}, { 'SSL_Orgs': 1, '_id': 0 }).exec();
-    },
-    getWhoisOrgsPromise: function () {
-        return configModel.find({}, { 'Whois_Orgs': 1, '_id': 0 }).exec();
-    },
-    getFullConfigPromise: function () {
-        return configModel.find({}).exec();
-    },
+    QueryModel: queryModel,
 };
