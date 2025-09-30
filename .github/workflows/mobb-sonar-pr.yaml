@@ -1,6 +1,6 @@
-# Mobb/SonarQube Fixer on main branch pushes.
+# Mobb/SonarQube Fixer on pull requests.
 #
-# This workflow defines the needed steps to run SonarQube on main branch pushes
+# This workflow defines the needed steps to run SonarQube on every pull request
 # and pass the results to Mobb Fixer.
 #
 # Secrets in use (add your missing ones):
@@ -12,11 +12,11 @@
 # MOBB_API_TOKEN - your Mobb user API token.
 # GITHUB_TOKEN - automatically set by GitHub.
 #
-name: "Mobb/Sonar Branch"
+name: "Mobb/Sonar PR"
 
 on:
-  push:
-    branches: [ "main" ]
+  pull_request:
+    branches: [ "*" ]
 
 jobs:
   scan-and-fix:
@@ -29,9 +29,6 @@ jobs:
       statuses: write
       contents: read
       actions: read
-
-    env:
-      BRANCH: ${{ github.head_ref || github.ref_name }}
 
     steps:
       - name: Checkout repo to get code
@@ -54,7 +51,9 @@ jobs:
           
       - name: Check env
         run: |
-          echo "Branch is: $BRANCH"
+          echo "PR number: ${{ github.event.number }}"
+          echo "Head branch: ${{ github.head_ref }}"
+          echo "Base branch: ${{ github.base_ref }}"
           env
           
       - name: SonarQube Scan
@@ -67,7 +66,9 @@ jobs:
           args: >
             -Dsonar.projectKey=${{ vars.SONARQUBE_PROJECT }}
             -Dsonar.organization=${{ vars.SONARQUBE_ORG }}
-            -Dsonar.branch.name=${{ env.BRANCH }}
+            -Dsonar.pullrequest.key=${{ github.event.number }}
+            -Dsonar.pullrequest.branch=${{ github.head_ref }}
+            -Dsonar.pullrequest.base=${{ github.base_ref }}
             -Dsonar.token=${{ secrets.SONARQUBE_TOKEN }}
             -Dsonar.host.url=${{ vars.SONARQUBE_HOST_URL }}
             -Dsonar.sources=.
@@ -81,7 +82,7 @@ jobs:
           SONARQUBE_PROJECT=${{ vars.SONARQUBE_PROJECT }} \
           SONARQUBE_TOKEN=${{ secrets.SONARQUBE_TOKEN }} \
           SONARQUBE_ORG=${{ vars.SONARQUBE_ORG }} \
-          BRANCH="$BRANCH" \
+          PULL_REQUEST_ID=${{ github.event.number }} \
           REPORT_PATH=report.json \
           python .github/workflows/sonarqube_download_report.py
 
@@ -89,7 +90,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: sonarqube-report-branch
+          name: sonarqube-report-pr-${{ github.event.number }}
           path: report.json
           retention-days: 30
 
