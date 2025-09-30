@@ -45,6 +45,14 @@ jobs:
         uses: actions/setup-node@v3.6.0
         with:
           node-version: 18
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install pip requests
+        run: pip install requests
           
       - name: Check env
         run: |
