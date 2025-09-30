@@ -87,11 +87,18 @@ jobs:
           REPORT_PATH=report.json \
           python .github/workflows/sonarqube_download_report.py
 
+      - name: Archive SonarQube report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: sonarqube-report
+          path: report.json
+          retention-days: 30
+
       - name: Run Mobb on the findings and get fixes
         if: always()
-        uses: mobb-dev/action/review@v1.1
+        uses: mobb-dev/action@v1.1
         with:
           report-file: "report.json"
           api-key: ${{ secrets.MOBB_API_TOKEN }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          scanner: sonarqube
