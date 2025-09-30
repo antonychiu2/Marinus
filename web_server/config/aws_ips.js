@@ -15,29 +15,31 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const configSchema = new Schema({
-    updated: Date,
-    DNS_Admins: [String],
-    SSL_Orgs: [String],
-    Whois_Orgs: [String],
+const awsIpSchema = new Schema({
+    syncToken: String,
+    createDate: String,
+    prefixes: [{
+        region: String,
+        ip_prefix: String,
+        service: String,
+    }],
+    ipv6_prefixes: [{
+        region: String,
+        ipv6_prefix: String,
+        service: String,
+    }],
 }, {
-    collection: 'config',
+    collection: 'aws_ips',
 });
 
-const configModel = mongoose.model('configModel', configSchema);
+const awsIpModel = mongoose.model('awsIpModel', awsIpSchema);
 
 module.exports = {
-    configModel: configModel,
-    getDNSAdminsPromise: function () {
-        return configModel.find({}, { 'DNS_Admins': 1, '_id': 0 }).exec();
+    AwsIpModel: awsIpModel,
+    getAwsIpZonesPromise: function () {
+        return awsIpModel.find({}, { 'prefixes': 1, '_id': 0 }).exec();
     },
-    getSSLOrgsPromise: function () {
-        return configModel.find({}, { 'SSL_Orgs': 1, '_id': 0 }).exec();
-    },
-    getWhoisOrgsPromise: function () {
-        return configModel.find({}, { 'Whois_Orgs': 1, '_id': 0 }).exec();
-    },
-    getFullConfigPromise: function () {
-        return configModel.find({}).exec();
+    getAwsIpv6ZonesPromise: function () {
+        return awsIpModel.find({}, { 'ipv6_prefixes': 1, '_id': 0 }).exec();
     },
 };

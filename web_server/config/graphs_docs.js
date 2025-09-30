@@ -15,29 +15,23 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const configSchema = new Schema({
-    updated: Date,
-    DNS_Admins: [String],
-    SSL_Orgs: [String],
-    Whois_Orgs: [String],
+// graph model
+const graphsDocsSchema = new Schema({
+    zone: String,
+    created: Date,
+    docs: [],
 }, {
-    collection: 'config',
+    collection: 'graphs_docs',
 });
 
-const configModel = mongoose.model('configModel', configSchema);
+const graphDocsModel = mongoose.model('graphDocsModel', graphsDocsSchema);
 
 module.exports = {
-    configModel: configModel,
-    getDNSAdminsPromise: function () {
-        return configModel.find({}, { 'DNS_Admins': 1, '_id': 0 }).exec();
-    },
-    getSSLOrgsPromise: function () {
-        return configModel.find({}, { 'SSL_Orgs': 1, '_id': 0 }).exec();
-    },
-    getWhoisOrgsPromise: function () {
-        return configModel.find({}, { 'Whois_Orgs': 1, '_id': 0 }).exec();
-    },
-    getFullConfigPromise: function () {
-        return configModel.find({}).exec();
+    GraphDocsModel: graphDocsModel,
+    getGraphDocsByZone: function (zone) {
+        let limitQuery = { 'docs': 1 };
+        return graphDocsModel.findOne({
+            'zone': zone,
+        }, limitQuery).exec();
     },
 };

@@ -15,29 +15,21 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const configSchema = new Schema({
-    updated: Date,
-    DNS_Admins: [String],
-    SSL_Orgs: [String],
-    Whois_Orgs: [String],
+const azureIpSchema = new Schema({
+    createDate: Date,
+    prefixes: [{
+        region: String,
+        ip_prefix: String,
+    }],
 }, {
-    collection: 'config',
+    collection: 'azure_ips',
 });
 
-const configModel = mongoose.model('configModel', configSchema);
+const azureIpModel = mongoose.model('azureIpModel', azureIpSchema);
 
 module.exports = {
-    configModel: configModel,
-    getDNSAdminsPromise: function () {
-        return configModel.find({}, { 'DNS_Admins': 1, '_id': 0 }).exec();
-    },
-    getSSLOrgsPromise: function () {
-        return configModel.find({}, { 'SSL_Orgs': 1, '_id': 0 }).exec();
-    },
-    getWhoisOrgsPromise: function () {
-        return configModel.find({}, { 'Whois_Orgs': 1, '_id': 0 }).exec();
-    },
-    getFullConfigPromise: function () {
-        return configModel.find({}).exec();
+    AzureIpModel: azureIpModel,
+    getAzureIpZonesPromise: function () {
+        return azureIpModel.find({}, { 'prefixes': 1, '_id': 0 }).exec();
     },
 };

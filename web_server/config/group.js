@@ -15,29 +15,38 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const configSchema = new Schema({
+// group model
+const groupSchema = new Schema({
+    creator: String,
+    name: String,
+    creation_date: Date,
     updated: Date,
-    DNS_Admins: [String],
-    SSL_Orgs: [String],
-    Whois_Orgs: [String],
+    admins: [String],
+    status: String,
+    members: [String],
 }, {
-    collection: 'config',
+    collection: 'groups',
 });
 
-const configModel = mongoose.model('configModel', configSchema);
+const groupModel = mongoose.model('groupModel', groupSchema);
 
 module.exports = {
-    configModel: configModel,
-    getDNSAdminsPromise: function () {
-        return configModel.find({}, { 'DNS_Admins': 1, '_id': 0 }).exec();
+    GroupModel: groupModel,
+    getGroupByNamePromise: function (name) {
+        return groupModel.findOne({
+            'name': name,
+        }).exec();
     },
-    getSSLOrgsPromise: function () {
-        return configModel.find({}, { 'SSL_Orgs': 1, '_id': 0 }).exec();
+    getAllGroups: function () {
+        return groupModel.find({}).exec();
     },
-    getWhoisOrgsPromise: function () {
-        return configModel.find({}, { 'Whois_Orgs': 1, '_id': 0 }).exec();
-    },
-    getFullConfigPromise: function () {
-        return configModel.find({}).exec();
+    getGroupsByUserPromise: function (userid, nameOnly) {
+        let limitQuery = {};
+        if (nameOnly) {
+            limitQuery = { 'name': 1 };
+        }
+        return groupModel.find({
+            'members': userid,
+        }, limitQuery).exec();
     },
 };
