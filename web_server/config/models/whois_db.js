@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+const mongoSanitize = require('express-mongo-sanitize');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -54,7 +55,7 @@ module.exports = {
         let promise;
         if (count) {
             promise = whoisModel.countDocuments({
-                'name_servers': reServer,
+                'name_servers': mongoSanitize.sanitize({ data: reServer }).data,
             }).exec();
         } else {
             promise = whoisModel.find({ 'name_servers': reServer }).exec();
