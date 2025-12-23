@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+const escapeRegExp = require('lodash.escaperegexp');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -49,7 +50,7 @@ module.exports = {
     },
     getTPDsByWildcard: function (search, listOnly) {
         let promise;
-        let AWSregex = new RegExp('.*' + search + '$');
+        let AWSregex = new RegExp('.*' + escapeRegExp(search) + '$');
         if (listOnly) {
             promise = tpdModel.find({
                 'tld': { '$regex': AWSregex },

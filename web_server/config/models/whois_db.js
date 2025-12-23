@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+const escapeRegExp = require('lodash.escaperegexp');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -50,7 +51,7 @@ module.exports = {
         }).exec();
     },
     getWhoisDNSServerRecords: function (server, count) {
-        let reServer = new RegExp('.*' + server + '.*', 'i');
+        let reServer = new RegExp('.*' + escapeRegExp(server) + '.*', 'i');
         let promise;
         if (count) {
             promise = whoisModel.countDocuments({

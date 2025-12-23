@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+const escapeRegExp = require('lodash.escaperegexp');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -220,7 +221,7 @@ module.exports = {
         if (subdomain === undefined || subdomain === null || subdomain === 'all') {
             subdomain = '';
         }
-        let reAmazon = new RegExp('^.*' + subdomain + '\.amazonaws\.com');
+        let reAmazon = new RegExp('^.*' + escapeRegExp(subdomain) + '\.amazonaws\.com');
 
         let query = {
             'type': 'cname',
@@ -279,7 +280,7 @@ module.exports = {
          * Fetch all CNAME records that end in the provided search string.
          * (Optional) Limit the request by zone and/or source.
          */
-        let reSearch = new RegExp('.*' + search + '$');
+        let reSearch = new RegExp('.*' + escapeRegExp(search) + '$');
         let promise;
         let query;
         if (zone) {

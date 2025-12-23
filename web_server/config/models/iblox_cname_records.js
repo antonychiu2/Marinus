@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+const escapeRegExp = require('lodash.escaperegexp');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -56,7 +57,7 @@ module.exports = {
         return cnameModel.countDocuments(query).exec();
     },
     getIBCNameByCanonicalSearch: function (search, zone) {
-        let reSearch = new RegExp('.*' + search + '$');
+        let reSearch = new RegExp('.*' + escapeRegExp(search) + '$');
         let promise;
         if (zone) {
             promise = cnameModel.find({
