@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+const mongoSanitize = require('express-mongo-sanitize');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -39,7 +40,7 @@ module.exports = {
     HostModel: hostModel,
     getIBHostByZonePromise: function (zone) {
         return hostModel.find({
-            'zone': zone,
+            'zone': mongoSanitize.sanitize({ data: zone }).data,
         }).exec();
     },
     getIBHostByIBloxZonePromise: function (zone) {
@@ -49,12 +50,12 @@ module.exports = {
     },
     getIBHostByNamePromise: function (name) {
         return hostModel.find({
-            'name': name,
+            'name': mongoSanitize.sanitize({ data: name }).data,
         }).exec();
     },
     getIBHostByIPPromise: function (ip) {
         return hostModel.find({
-            'ipv4addrs.ipv4addr': ip,
+            'ipv4addrs.ipv4addr': mongoSanitize.sanitize({ data: ip }).data,
         });
     },
     getIBHostByIPRangePromise: function (ipRange) {

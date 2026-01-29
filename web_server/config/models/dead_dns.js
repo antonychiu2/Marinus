@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+const mongoSanitize = require('express-mongo-sanitize');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -40,14 +41,14 @@ module.exports = {
         return deadDnsModel.find({}).exec();
     },
     getDeadDNSByZonePromise: function (zone, source) {
-        let query = { 'zone': zone };
+        let query = { 'zone': mongoSanitize.sanitize({ data: zone }).data };
         if (source != null) {
             query['sources.source'] = source;
         }
         return deadDnsModel.find(query).exec();
     },
     getDeadDNSByDomainPromise: function (domain, source) {
-        let query = { 'fqdn': domain };
+        let query = { 'fqdn': mongoSanitize.sanitize({ data: domain }).data };
         if (source != null) {
             query['sources.source'] = source;
         }
@@ -56,7 +57,7 @@ module.exports = {
     getDeadDNSByIPPromise: function (ip, source) {
         let query = {
             'type': 'a',
-            'value': ip,
+            'value': mongoSanitize.sanitize({ data: ip }).data,
         };
         if (source != null) {
             query['sources.source'] = source;
@@ -88,7 +89,7 @@ module.exports = {
         }]).sort({ '_id': 1 }).exec();
     },
     getDeadDNSByTypePromise: function (type, zone, source, count) {
-        let search = { 'type': type };
+        let search = { 'type': mongoSanitize.sanitize({ data: type }).data };
         if (zone) {
             search['zone'] = zone;
         }
@@ -113,7 +114,7 @@ module.exports = {
 
         let query = {
             'type': 'cname',
-            'value': reAmazon,
+            'value': mongoSanitize.sanitize({ data: reAmazon }).data,
         };
 
         if (source != null) {
