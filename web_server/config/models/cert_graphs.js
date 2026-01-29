@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+const mongoSanitize = require('express-mongo-sanitize');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -31,6 +32,6 @@ const certGraphModel = mongoose.model('certGraphModel', certGraphSchema);
 module.exports = {
     CertGraphModel: certGraphModel,
     getGraphDataByZone: function (zone) {
-        return certGraphModel.findOne({ 'zone': zone }).exec();
+        return certGraphModel.findOne({ 'zone': mongoSanitize.sanitize({ data: zone }).data }).exec();
     },
 };
