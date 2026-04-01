@@ -618,7 +618,7 @@ function display_issuers(results, name) {
     displayHTML += end_list();
 
     document.getElementById("tableTitle").innerHTML = name;
-    document.getElementById("report_details").innerHTML = displayHTML;
+    document.getElementById("report_details").textContent = displayHTML;
 }
 
 
