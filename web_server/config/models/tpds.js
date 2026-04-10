@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+const mongoSanitize = require('express-mongo-sanitize');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -45,7 +46,7 @@ module.exports = {
         return (promise);
     },
     getTPDsByTPD: function (tpd) {
-        return tpdModel.findOne({ 'tld': tpd });
+        return tpdModel.findOne({ 'tld': mongoSanitize.sanitize({ data: tpd }).data });
     },
     getTPDsByWildcard: function (search, listOnly) {
         let promise;

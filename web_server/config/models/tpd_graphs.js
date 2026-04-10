@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+const mongoSanitize = require('express-mongo-sanitize');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -36,19 +37,19 @@ module.exports = {
     getTPDGraphDataByTPD: function (tpd) {
         let limitQuery = { 'data': 1, 'errs': 1 };
         return tpdGraphModel.findOne({
-            'zone': tpd,
+            'zone': mongoSanitize.sanitize({ data: tpd }).data,
         }, limitQuery).exec();
     },
     getTPDGraphConfigByTPD: function (tpd) {
         let limitQuery = { 'config': 1 };
         return tpdGraphModel.findOne({
-            'zone': tpd,
+            'zone': mongoSanitize.sanitize({ data: tpd }).data,
         }, limitQuery).exec();
     },
     getTPDGraphLinksByTPD: function (tpd) {
         let limitQuery = { 'links': 1 };
         return tpdGraphModel.findOne({
-            'zone': tpd,
+            'zone': mongoSanitize.sanitize({ data: tpd }).data,
         }, limitQuery).exec();
     },
 };
