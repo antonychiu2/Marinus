@@ -1,20 +1,6 @@
-# Legitify — Secure SCM configurations with Legit Security's open-source scanner
-# Legitify detects and remediates misconfigurations and security risks across
-# GitHub assets (org, member, repository, actions), and can upload results to
-# GitHub Code Scanning for a unified view.
-#
-# Source: https://github.com/Legit-Labs/legitify
-#
 # Secrets in use:
 # PAT_FOR_LEGITIFY - a GitHub Personal Access Token (classic) with scopes:
 #   admin:org, read:enterprise, admin:org_hook, read:org, repo, read:repo_hook
-#   (fine-grained PATs are currently NOT supported by legitify)
-#   Create one at https://github.com/settings/tokens
-# GITHUB_TOKEN - automatically set by GitHub (used here only for checkout)
-#
-# NOTE: This workflow analyzes the repo it runs from (analyze_self_only=true)
-# because marinus is a user-level repo. To analyze an entire org instead,
-# remove `analyze_self_only` and run it from a repo inside the target org.
 
 name: "Legitify Analyze"
 
@@ -32,15 +18,15 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      security-events: write   # required to upload results to Code Scanning
+      security-events: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Legitify Action
-        uses: Legit-Labs/legitify@main # it is recommended to use a specific commit hash
+        uses: Legit-Labs/legitify@main
         with:
           github_token: ${{ secrets.PAT_FOR_LEGITIFY }}
           analyze_self_only: "true"
-          scorecard: "verbose"   # optionally run OSSF Scorecard as part of the analysis
+          scorecard: "verbose"
