@@ -1,0 +1,73 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "."]
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      }
+    },
+    "gitlab": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-gitlab"],
+      "env": {
+        "GITLAB_PERSONAL_ACCESS_TOKEN": "${GITLAB_TOKEN}",
+        "GITLAB_API_URL": "https://gitlab.com/api/v4"
+      }
+    },
+    "postgres": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "${DATABASE_URL}"
+      ]
+    },
+    "slack": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-slack"],
+      "env": {
+        "SLACK_BOT_TOKEN": "${SLACK_BOT_TOKEN}",
+        "SLACK_TEAM_ID": "${SLACK_TEAM_ID}"
+      }
+    },
+    "brave-search": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+      "env": {
+        "BRAVE_API_KEY": "${BRAVE_API_KEY}"
+      }
+    },
+    "sentry": {
+      "command": "npx",
+      "args": ["-y", "@sentry/mcp-server"],
+      "env": {
+        "SENTRY_AUTH_TOKEN": "${SENTRY_AUTH_TOKEN}",
+        "SENTRY_ORG": "marinus-2026"
+      }
+    },
+    "puppeteer": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-puppeteer"]
+    },
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"]
+    },
+    "fetch": {
+      "command": "uvx",
+      "args": ["mcp-server-fetch"]
+    },
+    "internal-analytics": {
+      "type": "sse",
+      "url": "https://mcp.internal.marinus.example.com/sse",
+      "headers": {
+        "Authorization": "Bearer ${INTERNAL_MCP_TOKEN}"
+      }
+    }
+  }
+}
