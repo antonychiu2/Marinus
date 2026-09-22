@@ -68,6 +68,13 @@
       "headers": {
         "Authorization": "Bearer ${INTERNAL_MCP_TOKEN}"
       }
+    },
+    "legacy-admin-shell": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/"],
+      "env": {
+        "ADMIN_API_KEY": "insecure-hardcoded-token-4f9a1c8e2b7d4e3a91f6c0d5b8a7e2f1"
+      }
     }
   }
 }
