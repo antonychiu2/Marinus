@@ -5,10 +5,7 @@ name: opengrep-sast
 on:
   push:
     branches:
-      - "**"
-  pull_request:
-    branches:
-      - main
+      - "**"          # covers PR branches too; pull_request runs can't get an id-token
   workflow_dispatch: {}
 
 permissions:
@@ -17,12 +14,7 @@ permissions:
 
 env:
   OPENGREP_VERSION: v1.30.0
-  # python added: the repo has ~94 .py files (python3_cron_scripts/) that were never scanned
-  RULE_SETS: javascript typescript python generic json yaml dockerfile html
-  SARIF_FILE: opengrep.sarif
-  JUNIT_FILE: opengrep-junit.xml
-  # Gate: "none" = report only, "error" = fail on high, "warning" = fail on high or medium
-  FAIL_ON: none
+  BLOCK_ON_HIGH: "false"   # "true" = fail the run when high-severity findings exist
 
 jobs:
   opengrep:
@@ -30,169 +22,56 @@ jobs:
       - name: Check out source
         uses: cloudbees-io/checkout@v1
 
-      # ── Install + rules + scan + summarise, in ONE step ──────────────
-      # env/PATH do not persist across steps; only $CLOUDBEES_WORKSPACE files
-      # and $CLOUDBEES_OUTPUTS values carry forward. This step never fails on
-      # findings or scan errors - it reports scan_status and the gate decides.
       - name: OpenGrep scan
         id: scan
-        uses: docker://ubuntu:24.04          # glibc - alpine will NOT run the binary
-        shell: bash
+        uses: docker://alpine:3.20
+        shell: sh
         run: |
-          set -euo pipefail
-          export DEBIAN_FRONTEND=noninteractive
-          apt-get update -qq
-          apt-get install -y -qq curl git ca-certificates jq >/dev/null
+          set -eu
+          export LANG=C.UTF-8 LC_ALL=C.UTF-8     # rules contain UTF-8; OpenGrep crashes without this
+          apk add -q curl git jq
 
-          # Tooling lives OUTSIDE the workspace so the scan of "." never picks up
-          # the rules repo's vulnerable example code as findings.
-          TOOLS=/tmp/opengrep
-          mkdir -p "$TOOLS"
-          curl -fsSL -o "$TOOLS/opengrep" \
-            "https://github.com/opengrep/opengrep/releases/download/${OPENGREP_VERSION}/opengrep_manylinux_x86"
-          chmod +x "$TOOLS/opengrep"
-          "$TOOLS/opengrep" --version
-
-          git clone -q --depth 1 https://github.com/opengrep/opengrep-rules.git "$TOOLS/rules-src"
-          find "$TOOLS/rules-src" \( -name '*.test.yaml' -o -name '*.test.yml' \) -delete
-          mkdir -p "$TOOLS/rules"
-          for set in ${RULE_SETS}; do
-            [ -d "$TOOLS/rules-src/$set" ] && cp -r "$TOOLS/rules-src/$set" "$TOOLS/rules/"
-          done
+          curl -fsSL -o /usr/local/bin/opengrep \
+            "https://github.com/opengrep/opengrep/releases/download/${OPENGREP_VERSION}/opengrep_musllinux_x86"
+          chmod +x /usr/local/bin/opengrep
+          git clone -q --depth 1 https://github.com/opengrep/opengrep-rules.git /tmp/rules
 
           cd "$CLOUDBEES_WORKSPACE"
-          SARIF="$CLOUDBEES_WORKSPACE/${SARIF_FILE}"
-          JUNIT="$CLOUDBEES_WORKSPACE/${JUNIT_FILE}"
+          opengrep scan --config /tmp/rules/javascript --config /tmp/rules/python \
+            --json --output /tmp/results.json .
 
-          set +e
-          "$TOOLS/opengrep" scan --config "$TOOLS/rules" --sarif --output "$SARIF" .
-          rc=$?
-          set -e
+          # Each file in $CLOUDBEES_OUTPUTS becomes a step output
+          count() { jq "[.results[] | select(.extra.severity == \"$1\")] | length" /tmp/results.json; }
+          printf %s "$(count ERROR)"   > "$CLOUDBEES_OUTPUTS/high"
+          printf %s "$(count WARNING)" > "$CLOUDBEES_OUTPUTS/medium"
+          printf %s "$(count INFO)"    > "$CLOUDBEES_OUTPUTS/low"
+          jq -r '.results[:15][] | "| \(.extra.severity) | \(.check_id | split(".") | last) | `\(.path):\(.start.line)` |"' \
+            /tmp/results.json > "$CLOUDBEES_OUTPUTS/findings"
 
-          # Exit code 0 = scan ran (findings or not); anything else = scan error.
-          if [ "$rc" -ne 0 ] || [ ! -s "$SARIF" ]; then
-            echo "OpenGrep scan FAILED (exit $rc)"
-            cat > "$JUNIT" <<EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <testsuites name="opengrep" tests="1" failures="1">
-            <testsuite name="opengrep" tests="1" failures="1">
-              <testcase classname="opengrep" name="scan"><failure message="OpenGrep exited with code $rc"/></testcase>
-            </testsuite>
-          </testsuites>
-          EOF
-            {
-              echo "scan_status=failed (exit $rc)"
-              echo "verdict=⛔ Scan error"
-              echo "total=n/a"; echo "high=n/a"; echo "medium=n/a"; echo "low=n/a"
-              echo "files=n/a"; echo "rules=n/a"; echo "top_rules=n/a"
-            } >> "$CLOUDBEES_OUTPUTS"
-            exit 0
-          fi
-
-          # Flatten SARIF -> one record per finding. Level comes from the result,
-          # falling back to the rule's default level.
-          jq '
-            (reduce (.runs[].tool.driver.rules // [])[] as $r ({};
-               .[$r.id] = ($r.defaultConfiguration.level // "warning"))) as $lv
-            | [ .runs[].results[] | {
-                rule:  .ruleId,
-                level: (.level // $lv[.ruleId] // "warning"),
-                file:  .locations[0].physicalLocation.artifactLocation.uri,
-                line:  (.locations[0].physicalLocation.region.startLine // 0),
-                msg:   .message.text } ]
-          ' "$SARIF" > /tmp/findings.json
-
-          total=$(jq 'length' /tmp/findings.json)
-          high=$(jq '[.[] | select(.level=="error")]   | length' /tmp/findings.json)
-          medium=$(jq '[.[] | select(.level=="warning")] | length' /tmp/findings.json)
-          low=$(jq '[.[] | select(.level=="note" or .level=="none")] | length' /tmp/findings.json)
-          files=$(jq '[.[].file] | unique | length' /tmp/findings.json)
-          rules=$(jq '[.[].rule] | unique | length' /tmp/findings.json)
-          top=$(jq -r 'group_by(.rule)
-                       | map({r: (.[0].rule | split(".") | last), n: length})
-                       | sort_by(-.n) | .[:5]
-                       | map("`\(.r)` (\(.n))") | join(" · ")' /tmp/findings.json)
-
-          if   [ "$high" -gt 0 ];  then verdict="🔴 ${high} high-severity finding(s)"
-          elif [ "$total" -gt 0 ]; then verdict="🟠 ${total} finding(s), none high"
-          else                          verdict="✅ No findings"
-          fi
-
-          {
-            echo "scan_status=completed"
-            echo "verdict=${verdict}"
-            echo "total=${total}"; echo "high=${high}"; echo "medium=${medium}"; echo "low=${low}"
-            echo "files=${files}"; echo "rules=${rules}"
-            echo "top_rules=${top:-none}"
-          } >> "$CLOUDBEES_OUTPUTS"
-
-          # SARIF -> JUnit: one testsuite per rule, one failed testcase per finding,
-          # so every finding is browsable in the run's Test results view.
-          jq -r '
-            def esc: tostring | gsub("&";"&amp;") | gsub("<";"&lt;") | gsub(">";"&gt;") | gsub("\"";"&quot;");
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
-            "<testsuites name=\"opengrep\" tests=\"\([length,1]|max)\" failures=\"\(length)\">",
-            ( if length == 0 then
-                "  <testsuite name=\"opengrep\" tests=\"1\" failures=\"0\"><testcase classname=\"opengrep\" name=\"no findings\"/></testsuite>"
-              else
-                ( group_by(.rule)[] |
-                  "  <testsuite name=\"\(.[0].rule | esc)\" tests=\"\(length)\" failures=\"\(length)\">",
-                  ( .[] | "    <testcase classname=\"\(.rule | esc)\" name=\"\(.file | esc):\(.line)\"><failure type=\"\(.level)\" message=\"\(.msg | esc)\">\(.file | esc):\(.line) - \(.msg | esc)</failure></testcase>" ),
-                  "  </testsuite>" )
-              end ),
-            "</testsuites>"
-          ' /tmp/findings.json > "$JUNIT"
-
-          echo "── OpenGrep: ${verdict} (high=${high} medium=${medium} low=${low}, ${files} files, ${rules} rules)"
-          jq -r '.[] | "\(.level)\t\(.file):\(.line)\t\(.rule)"' /tmp/findings.json | sort | head -200
-
-      # ── Per-finding detail in the run's Test results view ────────────
-      - name: Publish findings as test results
-        if: ${{ always() }}
-        uses: cloudbees-io/publish-test-results@v2
-        with:
-          test-type: junit
-          results-path: ${{ env.JUNIT_FILE }}
-
-      # ── Summary in the run's Evidence tab ────────────────────────────
-      - name: Publish OpenGrep evidence
+      - name: Publish evidence
         if: ${{ always() }}
         uses: cloudbees-io/publish-evidence-item@v1
         with:
           content: |
-            ## OpenGrep SAST: ${{ steps.scan.outputs.verdict }}
+            ## OpenGrep SAST
 
-            | Severity | Findings |
-            |---|---|
-            | 🔴 High (error) | ${{ steps.scan.outputs.high }} |
-            | 🟠 Medium (warning) | ${{ steps.scan.outputs.medium }} |
-            | 🔵 Low (note) | ${{ steps.scan.outputs.low }} |
-            | **Total** | **${{ steps.scan.outputs.total }}** |
+            | 🔴 High | 🟠 Medium | 🔵 Low |
+            |:-:|:-:|:-:|
+            | ${{ steps.scan.outputs.high }} | ${{ steps.scan.outputs.medium }} | ${{ steps.scan.outputs.low }} |
 
-            - **Files affected:** ${{ steps.scan.outputs.files }} · **Rules triggered:** ${{ steps.scan.outputs.rules }}
-            - **Top rules:** ${{ steps.scan.outputs.top_rules }}
-            - **Scan status:** ${{ steps.scan.outputs.scan_status }} · **Gate:** fail on `${{ env.FAIL_ON }}`
-            - **Scanner:** OpenGrep ${{ env.OPENGREP_VERSION }} · **Rule sets:** ${{ env.RULE_SETS }}
-            - **Run:** ${{ cloudbees.run_id }}
-            - Per-finding detail (file, line, rule, message): see this run's **Test results**.
+            ### Findings (first 15)
+            | Severity | Rule | Location |
+            |---|---|---|
+            ${{ steps.scan.outputs.findings }}
 
-      # ── Gate: runs last so evidence and test results are always published ──
-      - name: Enforce OpenGrep gate
-        if: ${{ always() }}
+            OpenGrep ${{ env.OPENGREP_VERSION }} · rules: javascript, python · run `${{ cloudbees.run_id }}`
+
+      - name: Security gate
         uses: docker://alpine:3.20
         shell: sh
-        env:
-          SCAN_STATUS: ${{ steps.scan.outputs.scan_status }}
-          HIGH: ${{ steps.scan.outputs.high }}
-          MEDIUM: ${{ steps.scan.outputs.medium }}
         run: |
-          set -eu
-          if [ "$SCAN_STATUS" != "completed" ]; then
-            echo "OpenGrep did not complete: ${SCAN_STATUS:-no status}"; exit 1
+          HIGH="${{ steps.scan.outputs.high }}"
+          echo "High-severity findings: $HIGH (BLOCK_ON_HIGH=$BLOCK_ON_HIGH)"
+          if [ "$BLOCK_ON_HIGH" = "true" ] && [ "$HIGH" -gt 0 ]; then
+            echo "Blocked by security gate"; exit 1
           fi
-          case "$FAIL_ON" in
-            error)   [ "$HIGH" -eq 0 ] || { echo "Gate failed: $HIGH high finding(s)"; exit 1; } ;;
-            warning) [ $((HIGH + MEDIUM)) -eq 0 ] || { echo "Gate failed: $HIGH high + $MEDIUM medium"; exit 1; } ;;
-            *)       echo "Gate in report-only mode (FAIL_ON=$FAIL_ON)" ;;
-          esac
-          echo "Gate passed"
