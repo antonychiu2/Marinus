@@ -1,0 +1,101 @@
+apiVersion: automation.cloudbees.io/v1alpha1
+kind: workflow
+name: opengrep-sast
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch: {}
+
+permissions:
+  id-token: write          # CloudBees run token (replaces nothing in GHA)
+  contents: read           # NOTE: 'security-events: write' has no equivalent — drop it
+
+env:
+  OPENGREP_VERSION: v1.30.0
+  RULE_SETS: javascript typescript generic json yaml dockerfile html
+  SARIF_FILE: opengrep.sarif
+
+jobs:
+  opengrep:
+    steps:
+      - name: Check out source
+        uses: cloudbees-io/checkout@v1
+        # checks out into $CLOUDBEES_WORKSPACE, shared by later steps
+
+      # ── ONE step: install + rules + scan ─────────────────────────────
+      # Must be a single step because env/PATH do NOT persist across steps.
+      - name: OpenGrep scan → SARIF
+        uses: docker://ubuntu:24.04          # glibc — alpine will NOT run the binary
+        shell: bash
+        run: |
+          set -euo pipefail
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update -qq
+          apt-get install -y -qq curl git ca-certificates >/dev/null
+
+          # 1. OpenGrep binary → into the workspace so it survives
+          mkdir -p "$CLOUDBEES_WORKSPACE/bin"
+          curl -fsSL -o "$CLOUDBEES_WORKSPACE/bin/opengrep" \
+            "https://github.com/opengrep/opengrep/releases/download/${OPENGREP_VERSION}/opengrep_manylinux_x86"
+          chmod +x "$CLOUDBEES_WORKSPACE/bin/opengrep"
+          "$CLOUDBEES_WORKSPACE/bin/opengrep" --version
+
+          # 2. Rules → into the workspace
+          rm -rf "$CLOUDBEES_WORKSPACE/.opengrep-rules-src" "$CLOUDBEES_WORKSPACE/.opengrep-rules"
+          git clone --depth 1 https://github.com/opengrep/opengrep-rules.git \
+            "$CLOUDBEES_WORKSPACE/.opengrep-rules-src"
+          cd "$CLOUDBEES_WORKSPACE/.opengrep-rules-src"
+          find . \( -name '*.test.yaml' -o -name '*.test.yml' \) -delete
+          mkdir -p "$CLOUDBEES_WORKSPACE/.opengrep-rules"
+          for set in ${RULE_SETS}; do
+            [ -d "$set" ] && cp -r "$set" "$CLOUDBEES_WORKSPACE/.opengrep-rules/"
+          done
+
+          # 3. Scan the checked-out source; '|| true' so findings don't fail the step
+          cd "$CLOUDBEES_WORKSPACE"
+          "$CLOUDBEES_WORKSPACE/bin/opengrep" scan \
+            --config "$CLOUDBEES_WORKSPACE/.opengrep-rules" \
+            --sarif \
+            --output "$CLOUDBEES_WORKSPACE/${SARIF_FILE}" \
+            . || true
+
+          echo "SARIF written: $(wc -c < "$CLOUDBEES_WORKSPACE/${SARIF_FILE}") bytes"
+
+      # ── Make the SARIF visible in the run's Evidence tab ─────────────
+      - name: Publish SARIF evidence
+        if: ${{ always() }}
+        uses: cloudbees-io/publish-evidence-item@v1
+        with:
+          content: |
+            ## OpenGrep SAST
+            - Scanner: OpenGrep ${{ env.OPENGREP_VERSION }}
+            - Rule sets: ${{ env.RULE_SETS }}
+            - SARIF: `${{ env.SARIF_FILE }}` (uploaded as a workflow artifact)
+            - Status: scan completed
+
+      # ── EXPERIMENTAL: upload SARIF as a workflow artifact ────────────
+      # Unify resolves 'org/repo@ref' from github.com, so GitHub Actions
+      # should resolve — but verify it works in YOUR org before relying on it.
+      - name: Upload SARIF as workflow artifact
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: opengrep-sarif
+          path: ${{ env.SARIF_FILE }}
+          retention-days: 30
+
+      # ── OPTIONAL: fail the build on findings (governance gate) ───────
+      # Requires a policy named 'opengrep-sast-policy' to exist first.
+      - name: Enforce SARIF policy
+        if: ${{ always() }}
+        uses: cloudbees-io/policy-eval@v1
+        continue-on-error: true
+        with:
+          input-file: ${{ env.SARIF_FILE }}
+          policy-id: opengrep-sast-policy
