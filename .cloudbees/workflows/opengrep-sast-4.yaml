@@ -80,10 +80,10 @@ jobs:
 
       # ── OPTIONAL: fail the build on findings (governance gate) ───────
       # Requires a policy named 'opengrep-sast-policy' to exist first.
-      - name: Enforce SARIF policy
-        if: ${{ always() }}
-        uses: cloudbees-io/policy-eval@v1
-        continue-on-error: true
-        with:
-          input-file: ${{ env.SARIF_FILE }}
-          policy-id: opengrep-sast-policy
+      # - name: Enforce SARIF policy
+      #   if: ${{ always() }}
+      #   uses: cloudbees-io/policy-eval@v1
+      #   continue-on-error: true
+      #   with:
+      #     input-file: ${{ env.SARIF_FILE }}
+      #     policy-id: opengrep-sast-policy
