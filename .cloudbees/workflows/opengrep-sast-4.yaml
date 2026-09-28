@@ -78,18 +78,6 @@ jobs:
             - SARIF: `${{ env.SARIF_FILE }}` (uploaded as a workflow artifact)
             - Status: scan completed
 
-      # ── EXPERIMENTAL: upload SARIF as a workflow artifact ────────────
-      # Unify resolves 'org/repo@ref' from github.com, so GitHub Actions
-      # should resolve — but verify it works in YOUR org before relying on it.
-      - name: Upload SARIF as workflow artifact
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v4
-        continue-on-error: true
-        with:
-          name: opengrep-sarif
-          path: ${{ env.SARIF_FILE }}
-          retention-days: 30
-
       # ── OPTIONAL: fail the build on findings (governance gate) ───────
       # Requires a policy named 'opengrep-sast-policy' to exist first.
       - name: Enforce SARIF policy
