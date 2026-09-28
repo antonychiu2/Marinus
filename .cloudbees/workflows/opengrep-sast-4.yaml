@@ -5,85 +5,73 @@ name: opengrep-sast
 on:
   push:
     branches:
-      - "**"
-  pull_request:
-    branches:
-      - main
+      - "**"          # covers PR branches too; pull_request runs can't get an id-token
   workflow_dispatch: {}
 
 permissions:
-  id-token: write          # CloudBees run token (replaces nothing in GHA)
-  contents: read           # NOTE: 'security-events: write' has no equivalent — drop it
+  id-token: write
+  contents: read
 
 env:
   OPENGREP_VERSION: v1.30.0
-  RULE_SETS: javascript typescript generic json yaml dockerfile html
-  SARIF_FILE: opengrep.sarif
+  BLOCK_ON_HIGH: "false"   # "true" = fail the run when high-severity findings exist
 
 jobs:
   opengrep:
     steps:
       - name: Check out source
         uses: cloudbees-io/checkout@v1
-        # checks out into $CLOUDBEES_WORKSPACE, shared by later steps
 
-      # ── ONE step: install + rules + scan ─────────────────────────────
-      # Must be a single step because env/PATH do NOT persist across steps.
-      - name: OpenGrep scan → SARIF
-        uses: docker://ubuntu:24.04          # glibc — alpine will NOT run the binary
-        shell: bash
+      - name: OpenGrep scan
+        id: scan
+        uses: docker://alpine:3.20
+        shell: sh
         run: |
-          set -euo pipefail
-          export DEBIAN_FRONTEND=noninteractive
-          apt-get update -qq
-          apt-get install -y -qq curl git ca-certificates >/dev/null
+          set -eu
+          export LANG=C.UTF-8 LC_ALL=C.UTF-8     # rules contain UTF-8; OpenGrep crashes without this
+          apk add -q curl git jq
 
-          # 1. OpenGrep binary → into the workspace so it survives
-          mkdir -p "$CLOUDBEES_WORKSPACE/bin"
-          curl -fsSL -o "$CLOUDBEES_WORKSPACE/bin/opengrep" \
-            "https://github.com/opengrep/opengrep/releases/download/${OPENGREP_VERSION}/opengrep_manylinux_x86"
-          chmod +x "$CLOUDBEES_WORKSPACE/bin/opengrep"
-          "$CLOUDBEES_WORKSPACE/bin/opengrep" --version
+          curl -fsSL -o /usr/local/bin/opengrep \
+            "https://github.com/opengrep/opengrep/releases/download/${OPENGREP_VERSION}/opengrep_musllinux_x86"
+          chmod +x /usr/local/bin/opengrep
+          git clone -q --depth 1 https://github.com/opengrep/opengrep-rules.git /tmp/rules
 
-          # 2. Rules → into the workspace
-          rm -rf "$CLOUDBEES_WORKSPACE/.opengrep-rules-src" "$CLOUDBEES_WORKSPACE/.opengrep-rules"
-          git clone --depth 1 https://github.com/opengrep/opengrep-rules.git \
-            "$CLOUDBEES_WORKSPACE/.opengrep-rules-src"
-          cd "$CLOUDBEES_WORKSPACE/.opengrep-rules-src"
-          find . \( -name '*.test.yaml' -o -name '*.test.yml' \) -delete
-          mkdir -p "$CLOUDBEES_WORKSPACE/.opengrep-rules"
-          for set in ${RULE_SETS}; do
-            [ -d "$set" ] && cp -r "$set" "$CLOUDBEES_WORKSPACE/.opengrep-rules/"
-          done
-
-          # 3. Scan the checked-out source; '|| true' so findings don't fail the step
           cd "$CLOUDBEES_WORKSPACE"
-          "$CLOUDBEES_WORKSPACE/bin/opengrep" scan \
-            --config "$CLOUDBEES_WORKSPACE/.opengrep-rules" \
-            --sarif \
-            --output "$CLOUDBEES_WORKSPACE/${SARIF_FILE}" \
-            . || true
+          opengrep scan --config /tmp/rules/javascript --config /tmp/rules/python \
+            --json --output /tmp/results.json .
 
-          echo "SARIF written: $(wc -c < "$CLOUDBEES_WORKSPACE/${SARIF_FILE}") bytes"
+          # Each file in $CLOUDBEES_OUTPUTS becomes a step output
+          count() { jq "[.results[] | select(.extra.severity == \"$1\")] | length" /tmp/results.json; }
+          printf %s "$(count ERROR)"   > "$CLOUDBEES_OUTPUTS/high"
+          printf %s "$(count WARNING)" > "$CLOUDBEES_OUTPUTS/medium"
+          printf %s "$(count INFO)"    > "$CLOUDBEES_OUTPUTS/low"
+          jq -r '.results[:15][] | "| \(.extra.severity) | \(.check_id | split(".") | last) | `\(.path):\(.start.line)` |"' \
+            /tmp/results.json > "$CLOUDBEES_OUTPUTS/findings"
 
-      # ── Make the SARIF visible in the run's Evidence tab ─────────────
-      - name: Publish SARIF evidence
+      - name: Publish evidence
         if: ${{ always() }}
         uses: cloudbees-io/publish-evidence-item@v1
         with:
           content: |
             ## OpenGrep SAST
-            - Scanner: OpenGrep ${{ env.OPENGREP_VERSION }}
-            - Rule sets: ${{ env.RULE_SETS }}
-            - SARIF: `${{ env.SARIF_FILE }}` (uploaded as a workflow artifact)
-            - Status: scan completed
 
-      # ── OPTIONAL: fail the build on findings (governance gate) ───────
-      # Requires a policy named 'opengrep-sast-policy' to exist first.
-      # - name: Enforce SARIF policy
-      #   if: ${{ always() }}
-      #   uses: cloudbees-io/policy-eval@v1
-      #   continue-on-error: true
-      #   with:
-      #     input-file: ${{ env.SARIF_FILE }}
-      #     policy-id: opengrep-sast-policy
+            | 🔴 High | 🟠 Medium | 🔵 Low |
+            |:-:|:-:|:-:|
+            | ${{ steps.scan.outputs.high }} | ${{ steps.scan.outputs.medium }} | ${{ steps.scan.outputs.low }} |
+
+            ### Findings (first 15)
+            | Severity | Rule | Location |
+            |---|---|---|
+            ${{ steps.scan.outputs.findings }}
+
+            OpenGrep ${{ env.OPENGREP_VERSION }} · rules: javascript, python · run `${{ cloudbees.run_id }}`
+
+      - name: Security gate
+        uses: docker://alpine:3.20
+        shell: sh
+        run: |
+          HIGH="${{ steps.scan.outputs.high }}"
+          echo "High-severity findings: $HIGH (BLOCK_ON_HIGH=$BLOCK_ON_HIGH)"
+          if [ "$BLOCK_ON_HIGH" = "true" ] && [ "$HIGH" -gt 0 ]; then
+            echo "Blocked by security gate"; exit 1
+          fi
